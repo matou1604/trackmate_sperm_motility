@@ -1,0 +1,135 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>org.scijava</groupId>
+        <artifactId>pom-scijava</artifactId>
+        <version>37.0.0</version>
+        <relativePath />
+    </parent>
+
+    <groupId>ch.epfl.bio410</groupId>
+    <artifactId>project-template</artifactId> <!-- Replace the artifact id by your project name -->
+    <version>1.0.0-SNAPSHOT</version>
+
+    <name>Project template</name> <!-- Replace the name & description by your project -->
+    <description>Minimal repository and piece of code to run code and use git/GitLab</description>
+    <inceptionYear>2024</inceptionYear>
+    <url>https://edu.epfl.ch/coursebook/en/bioimage-informatics-BIO-410</url>
+    <organization>
+        <name>BIO-410</name>
+        <url>https://edu.epfl.ch/coursebook/en/bioimage-informatics-BIO-410</url>
+    </organization>
+    <licenses>
+        <license>
+            <name>GNU General Public License v3</name>
+            <url>https://www.gnu.org/licenses/gpl-3.0.html</url>
+            <distribution>repo</distribution>
+        </license>
+    </licenses>
+
+    <developers>
+        <!-- Add the group members as developers -->
+        <developer>
+            <id>yourFavoriteSurname</id>
+            <name>Your name</name>
+            <url>link to your epfl people profile</url>
+            <roles>
+                <role>founder</role>
+                <role>lead</role>
+                <role>developer</role>
+                <role>debugger</role>
+                <role>reviewer</role>
+                <role>support</role>
+                <role>maintainer</role>
+            </roles>
+        </developer>
+    </developers>
+
+    <contributors>
+        <!-- Add the group members as contributors -->
+        <contributor>
+            <name>Daniel Sage</name>
+            <url>http://bigwww.epfl.ch/sage/</url>
+            <roles><role>founder</role></roles>
+            <properties><id>dsage</id></properties>
+        </contributor>
+        <contributor>
+            <name>Arne Seitz</name>
+            <url>https://www.epfl.ch/research/facilities/ptbiop/staff/</url>
+            <roles><role>founder</role></roles>
+            <properties><id>steiz</id></properties>
+        </contributor>
+        <contributor>
+            <name>Rémy Dornier</name>
+            <url>https://www.epfl.ch/research/facilities/ptbiop/staff/</url>
+            <roles><role>maintainer</role></roles>
+            <properties><id>dornier</id></properties>
+        </contributor>
+    </contributors>
+
+    <mailingLists>
+        <mailingList>
+            <name>Image.sc Forum</name>
+            <archive>https://forum.image.sc/</archive>
+        </mailingList>
+    </mailingLists>
+
+    <issueManagement>
+        <system>Moodle forum</system>
+        <url>https://moodle.epfl.ch/mod/forum/view.php?id=1054955</url>
+    </issueManagement>
+
+    <scm>
+        <connection>scm:git:git://github.com/</connection>
+        <developerConnection>scm:git:git@github.com:</developerConnection>
+        <tag>HEAD</tag>
+        <url>https://github.com/</url>
+    </scm>
+
+    <ciManagement>
+        <system>None</system>
+    </ciManagement>
+
+    <repositories>
+        <repository>
+            <id>scijava.public</id>
+            <url>https://maven.scijava.org/content/groups/public</url>
+        </repository>
+    </repositories>
+
+    <properties>
+        <package-name>ch.epfl.bio410</package-name>
+        <license.licenseName>gpl_v3</license.licenseName>
+        <!-- Add the name of the group members as copyright owners -->
+        <license.copyrightOwners>ECOLE POLYTECHNIQUE FEDERALE DE LAUSANNE, Switzerland</license.copyrightOwners>
+    </properties>
+
+    <dependencies>
+        <dependency>
+            <groupId>net.imagej</groupId>
+            <artifactId>imagej</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>net.imagej</groupId>
+            <artifactId>imagej-legacy</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>sc.fiji</groupId>
+            <artifactId>Fiji_Plugins</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>sc.fiji</groupId>
+            <artifactId>Trainable_Segmentation</artifactId>
+        </dependency>
+
+
+        <!-- Add your dependencies here, following the above structure + <version></version> -->
+
+
+    </dependencies>
+
+</project>
