@@ -6,6 +6,7 @@ import org.scijava.command.Command;
 import org.scijava.plugin.Plugin;
 
 
+
 @Plugin(type = Command.class, menuPath = "Plugins>FRT>Sperm motility")
 public class SpermMotility implements Command {
 

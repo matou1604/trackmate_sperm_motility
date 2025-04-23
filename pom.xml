@@ -114,22 +114,26 @@
             <artifactId>imagej</artifactId>
         </dependency>
         <dependency>
-            <groupId>net.imagej</groupId>
-            <artifactId>imagej-legacy</artifactId>
+            <groupId>sc.fiji</groupId>
+            <artifactId>TrackMate</artifactId>
+            <version>7.12.1</version>
         </dependency>
         <dependency>
-            <groupId>sc.fiji</groupId>
-            <artifactId>Fiji_Plugins</artifactId>
+            <groupId>org.knowm.xchart</groupId>
+            <artifactId>xchart</artifactId>
+            <version>3.8.8</version>
         </dependency>
         <dependency>
-            <groupId>sc.fiji</groupId>
-            <artifactId>Trainable_Segmentation</artifactId>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-csv</artifactId>
+            <version>1.8</version>
         </dependency>
-
-
-        <!-- Add your dependencies here, following the above structure + <version></version> -->
-
-
+        <dependency>
+            <groupId>net.haesleinhuepf</groupId>
+            <artifactId>clij2_</artifactId>
+            <version>2.5.3.1</version>
+        </dependency>
     </dependencies>
+
 
 </project>
