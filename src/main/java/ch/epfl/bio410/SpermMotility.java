@@ -17,6 +17,8 @@ import java.nio.file.Paths;
 import java.util.*;
 import java.util.List;
 
+import java.io.File;
+
 import org.apache.commons.csv.CSVRecord;
 import javax.swing.*;
 
@@ -53,7 +55,7 @@ public class SpermMotility implements Command {
 
 	public void run() {
 
-		GenericDialog dlg = new GenericDialog("Replisome Analysis");
+		GenericDialog dlg = new GenericDialog("Sperm motility");
 		dlg.addDirectoryField("Path to the image", path);
 		if (dlg.wasCanceled()) return;
 
@@ -70,10 +72,10 @@ public class SpermMotility implements Command {
 				maxFrameGap,
 				durationFilter
 		);
-		String path = "C:/Users/mathi/Downloads";
-		String image = "C24-TDI-TP1-Motility-02.czi";
+		//String path = "C:/Users/mathi/OneDrive/Documents/EPFL/PDM Harvard/Trackmate/data/";
+		//String image = "C24-TDI-TP1-Motility-02.tiff";
 		// show the image
-		String imagePath = Paths.get(path, image).toString();
+		//String imagePath = Paths.get(path, image).toString();
 		// Results
 //		// Save the results to CSV
 //		String imageNameWithoutExtension = image.substring(0, image.lastIndexOf('.'));
@@ -81,25 +83,41 @@ public class SpermMotility implements Command {
 //		String resultsPath = Paths.get(path, "results").toString();
 //		File resultsFolder = new File(resultsPath);
 
-		ImagePlus imp = IJ.openImage(imagePath);
-		imp.show();
-
-
-		// check that image only has one channel
-		ImagePlus imageGFP = WindowManager.getImage("C2-" + imp.getTitle());
-		// show the results
-		imageGFP.show();
-		// Tile
-		IJ.run("Tile");
-
-
 		// TRACKING
 		Tracking tracker = new Tracking();
 		tracker.setConfig(config);
-		// Note : model and config are exposed for later if needed
-		Model model = tracker.runTracking(imageGFP);
-		FeatureModel featureModel = model.getFeatureModel();
-		// see https://imagej.net/plugins/trackmate/scripting/scripting#display-spot-edge-and-track-numerical-features-after-tracking for ways to get the features
+
+		// get path
+		String inputDir = IJ.getDirectory("Choose a folder containing .tiff files");
+		if (inputDir == null) {
+			IJ.log("No directory selected. Exiting.");
+			return;
+		}
+
+		// Get the list of .tiff files in the directory
+		File dir = new File(inputDir);
+		FilenameFilter filter = (dir1, name) -> name.toLowerCase().endsWith(".tiff");
+		fileList = dir.list(filter);
+		if (fileList == null || fileList.length == 0) {
+			IJ.log("No .tiff files found in the directory.");
+			return;
+		}
+
+		// start for loop processing and tracking each image in loop one at a time
+		for (String fileName : fileList) {
+			String imagePath = Paths.get(inputDir, fileName).toString();
+			IJ.log("Processing image: " + imagePath);
+			// Open the image
+			ImagePlus imp = IJ.openImage(imagePath);
+			imp.show();
+			IJ.run(imp, "Subtract Background...", "rolling=50");
+			IJ.run(imp, "Enhance Contrast", "saturated=0.35");
+
+			// Run tracking on the image
+//			Model model = tracker.runTracking(imp);
+//			FeatureModel featureModel = model.getFeatureModel();
+//			IJ.run("Tile");
+			// see https://imagej.net/plugins/trackmate/scripting/scripting#display-spot-edge-and-track-numerical-features-after-tracking for ways to get the features
 
 //		if (!resultsFolder.exists()) {
 //			if (resultsFolder.mkdir()) {
@@ -116,10 +134,11 @@ public class SpermMotility implements Command {
 //		} catch (IOException e) {
 //			throw new RuntimeException(e);
 //		}
+			// Close the image
+			imp.close();
+			IJ.log("Finished processing image: " + imagePath);
+		}
 	}
-
-
-
 
 
 
