@@ -9,19 +9,10 @@ import org.scijava.command.Command;
 import org.scijava.plugin.Plugin;
 
 import java.awt.*;
-import java.awt.event.TextEvent;
-import java.awt.event.TextListener;
 import java.io.File;
 import java.io.FilenameFilter;
 import java.io.IOException;
 import java.nio.file.Paths;
-import java.util.*;
-import java.util.List;
-
-import java.io.File;
-
-import org.apache.commons.csv.CSVRecord;
-import javax.swing.*;
 
 import fiji.plugin.trackmate.FeatureModel;
 import fiji.plugin.trackmate.Model;
@@ -48,9 +39,9 @@ public class SpermMotility implements Command {
 	private final boolean medianFilter = true; // Detection parameters, do median filter (GFP channel only, before detection in TrackMate)
 	// Tracking parameters
 	private final double maxLinkDistance = 5; // Tracking parameters, max linking distance between objects
-	private final double maxGapDistance = 8; // Tracking parameters, max gap distance to close a track across frames
+	private final double maxGapDistance = 20; // Tracking parameters, max gap distance to close a track across frames
 	private final int maxFrameGap = 3; // Tracking parameters, max frame gap allowed for tracking
-	private final double durationFilter = 8; // Tracking parameters, duration filter (min duration of a track)
+	private final double durationFilter = 1; // Tracking parameters, duration filter (min duration of a track)
 	// Config
 
 
@@ -59,6 +50,13 @@ public class SpermMotility implements Command {
 		GenericDialog dlg = new GenericDialog("Sperm motility");
 		dlg.addDirectoryField("Path to the image", path);
 		if (dlg.wasCanceled()) return;
+
+		// get path
+		String inputDir = IJ.getDirectory("Choose a folder containing .tiff files");
+		if (inputDir == null) {
+			IJ.log("No directory selected. Exiting.");
+			return;
+		}
 
 		// Get all the parameters
 
@@ -73,24 +71,10 @@ public class SpermMotility implements Command {
 				maxFrameGap,
 				durationFilter
 		);
-		//String path = "C:/Users/mathi/OneDrive/Documents/EPFL/PDM Harvard/Trackmate/data/";
-		//String image = "C24-TDI-TP1-Motility-02.tiff";
-		// show the image
-		//String imagePath = Paths.get(path, image).toString();
-		// Results
-//		// Save the results to CSV
-//		String imageNameWithoutExtension = image.substring(0, image.lastIndexOf('.'));
 
 		// TRACKING
 		Tracking tracker = new Tracking();
 		tracker.setConfig(config);
-
-		// get path
-		String inputDir = IJ.getDirectory("Choose a folder containing .tiff files");
-		if (inputDir == null) {
-			IJ.log("No directory selected. Exiting.");
-			return;
-		}
 
 		// Get the list of .tiff files in the directory
 		File dir = new File(inputDir);
@@ -138,6 +122,7 @@ public class SpermMotility implements Command {
 			File csvTracksPath = Paths.get(resultsPath, "tracks_" + imageNameWithoutExtension + ".csv").toFile();
 			try {
 				tracker.saveFeaturesToCSV(model, csvSpotsPath, csvTracksPath, imagePath);
+				IJ.log("Results saved.");
 			} catch (IOException e) {
 				throw new RuntimeException(e);
 			}
