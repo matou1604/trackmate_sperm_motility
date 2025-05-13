@@ -44,32 +44,50 @@ public class SpermMotility implements Command {
 	private final double durationFilter = 1; // Tracking parameters, duration filter (min duration of a track)
 	// Config
 
-
 	public void run() {
 
 		GenericDialog dlg = new GenericDialog("Sperm motility");
 		dlg.addDirectoryField("Path to the image", path);
+		dlg.addNumericField("Colony minimum area", colony_min_area, 0);
+		dlg.addNumericField("Detection radius (um)", radius, 2);
+		dlg.addNumericField("Detection threshold", threshold, 3);
+		//dlg.addSpace(10);
+		dlg.addCheckbox("Apply median filter", medianFilter);
+		dlg.addNumericField("Max linking distance", maxLinkDistance, 2);
+		dlg.addNumericField("Max gap closing distance", maxGapDistance, 2);
+		dlg.addNumericField("Max frame gap", maxFrameGap, 0);
+		dlg.addNumericField("Track duration filter (min)", durationFilter, 2);
+		dlg.showDialog();
+
 		if (dlg.wasCanceled()) return;
 
-		// get path
-		String inputDir = IJ.getDirectory("Choose a folder containing .tiff files");
-		if (inputDir == null) {
+		// Get user inputs
+		String inputDir = dlg.getNextString();
+		if (inputDir == null || inputDir.isEmpty()) {
 			IJ.log("No directory selected. Exiting.");
 			return;
 		}
-
 		// Get all the parameters
+		int colonyMinArea = (int) dlg.getNextNumber();
+		double detectionRadius = dlg.getNextNumber();
+		double detectionThreshold = dlg.getNextNumber();
+		boolean applyMedianFilter = dlg.getNextBoolean();
+		double linkingMaxDistance = dlg.getNextNumber();
+		double gapClosingMaxDistance = dlg.getNextNumber();
+		int frameGap = (int) dlg.getNextNumber();
+		double trackDurationMin = dlg.getNextNumber();
+
 
 		// Set the config if needed (use existing if set or no config available)
 		this.config = new TrackingConfig(
-				colony_min_area,
-				radius,
-				threshold,
-				medianFilter,
-				maxLinkDistance,
-				maxGapDistance,
-				maxFrameGap,
-				durationFilter
+				colonyMinArea,
+				detectionRadius,
+				detectionThreshold,
+				applyMedianFilter,
+				linkingMaxDistance,
+				gapClosingMaxDistance,
+				frameGap,
+				trackDurationMin
 		);
 
 		// TRACKING
@@ -128,9 +146,9 @@ public class SpermMotility implements Command {
 			}
 
 			// Look at tiles
-			new WaitForUserDialog("Image processing complete.\n", "The image " + fileName + " has been processed. \n" +
-					"The results have been saved to " + resultsPath + ".\n" +
-					"Press OK to continue to the next image.").show();
+//			new WaitForUserDialog("Image processing complete.\n", "The image " + fileName + " has been processed. \n" +
+//					"The results have been saved to " + resultsPath + ".\n" +
+//					"Press OK to continue to the next image.").show();
 
 			// Close the image
 			IJ.run("Close All");
