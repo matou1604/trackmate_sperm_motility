@@ -3,6 +3,7 @@ package ch.epfl.bio410;
 import ij.IJ;
 import ij.ImagePlus;
 import ij.gui.GenericDialog;
+import ij.gui.WaitForUserDialog;
 import net.imagej.ImageJ;
 import org.scijava.command.Command;
 import org.scijava.plugin.Plugin;
@@ -39,17 +40,17 @@ public class SpermMotility implements Command {
 	private String path = Paths.get(System.getProperty("user.home")).toString();
 	private TrackingConfig config;
 	private String[] fileList = new String[]{};
-	// Colony assignment parameters
+	// Colony assignment parameters (TODO: to remove)
 	private final int colony_min_area = 50; // Colony assignment parameters, minimum colony area
 	// Detection parameters
-	private final double radius = 0.31; 	// Detection parameters, radius of the object in um
-	private final double threshold = 80.0;  // Detection parameters, quality threshold
+	private final double radius = 7; 	// Detection parameters, radius of the object in um
+	private final double threshold = 0.357;  // Detection parameters, quality threshold
 	private final boolean medianFilter = true; // Detection parameters, do median filter (GFP channel only, before detection in TrackMate)
 	// Tracking parameters
-	private final double maxLinkDistance = 1.0; // Tracking parameters, max linking distance between objects
-	private final double maxGapDistance = 1.0; // Tracking parameters, max gap distance to close a track across frames
-	private final int maxFrameGap = 4; // Tracking parameters, max frame gap allowed for tracking
-	private final double durationFilter = 8.0; // Tracking parameters, duration filter (min duration of a track)
+	private final double maxLinkDistance = 5; // Tracking parameters, max linking distance between objects
+	private final double maxGapDistance = 8; // Tracking parameters, max gap distance to close a track across frames
+	private final int maxFrameGap = 3; // Tracking parameters, max frame gap allowed for tracking
+	private final double durationFilter = 8; // Tracking parameters, duration filter (min duration of a track)
 	// Config
 
 
@@ -79,9 +80,6 @@ public class SpermMotility implements Command {
 		// Results
 //		// Save the results to CSV
 //		String imageNameWithoutExtension = image.substring(0, image.lastIndexOf('.'));
-//		// create "results" folder if it doesn't exist
-//		String resultsPath = Paths.get(path, "results").toString();
-//		File resultsFolder = new File(resultsPath);
 
 		// TRACKING
 		Tracking tracker = new Tracking();
@@ -103,39 +101,54 @@ public class SpermMotility implements Command {
 			return;
 		}
 
+
+		// create "results" folder if it doesn't exist
+		String resultsPath = Paths.get(inputDir, "results").toString();
+		File resultsFolder = new File(resultsPath);
+
+		if (!resultsFolder.exists()) {
+			if (resultsFolder.mkdir()) {
+				IJ.log("Directory is created!");
+			} else {
+				IJ.log("Failed to create directory!");
+				throw new RuntimeException("Failed to create results directory. Aborting.");
+			}
+		}
+
+
 		// start for loop processing and tracking each image in loop one at a time
 		for (String fileName : fileList) {
 			String imagePath = Paths.get(inputDir, fileName).toString();
-			IJ.log("Processing image: " + imagePath);
+			String imageNameWithoutExtension = fileName.substring(0, fileName.lastIndexOf('.'));
+
+			IJ.log("Processing image: " + fileName);
 			// Open the image
 			ImagePlus imp = IJ.openImage(imagePath);
 			imp.show();
-			IJ.run(imp, "Subtract Background...", "rolling=50");
+			IJ.run(imp, "Subtract Background...", "stack rolling=50");
 			IJ.run(imp, "Enhance Contrast", "saturated=0.35");
 
 			// Run tracking on the image
-//			Model model = tracker.runTracking(imp);
-//			FeatureModel featureModel = model.getFeatureModel();
-//			IJ.run("Tile");
-			// see https://imagej.net/plugins/trackmate/scripting/scripting#display-spot-edge-and-track-numerical-features-after-tracking for ways to get the features
+			Model model = tracker.runTracking(imp);
+			FeatureModel featureModel = model.getFeatureModel();
+			IJ.run("Tile");
+			//see https://imagej.net/plugins/trackmate/scripting/scripting#display-spot-edge-and-track-numerical-features-after-tracking for ways to get the features
 
-//		if (!resultsFolder.exists()) {
-//			if (resultsFolder.mkdir()) {
-//				IJ.log("Directory is created!");
-//			} else {
-//				IJ.log("Failed to create directory!");
-//				throw new RuntimeException("Failed to create results directory. Aborting.");
-//			}
-//		}
-//		File csvSpotsPath = Paths.get(resultsPath, "spots_" + imageNameWithoutExtension + ".csv").toFile();
-//		File csvTracksPath = Paths.get(resultsPath, "tracks_" + imageNameWithoutExtension + ".csv").toFile();
-//		try {
-//			tracker.saveFeaturesToCSV(model, csvSpotsPath, csvTracksPath, imagePath);
-//		} catch (IOException e) {
-//			throw new RuntimeException(e);
-//		}
+			File csvSpotsPath = Paths.get(resultsPath, "spots_" + imageNameWithoutExtension + ".csv").toFile();
+			File csvTracksPath = Paths.get(resultsPath, "tracks_" + imageNameWithoutExtension + ".csv").toFile();
+			try {
+				tracker.saveFeaturesToCSV(model, csvSpotsPath, csvTracksPath, imagePath);
+			} catch (IOException e) {
+				throw new RuntimeException(e);
+			}
+
+			// Look at tiles
+			new WaitForUserDialog("Image processing complete.\n", "The image " + fileName + " has been processed. \n" +
+					"The results have been saved to " + resultsPath + ".\n" +
+					"Press OK to continue to the next image.").show();
+
 			// Close the image
-			imp.close();
+			IJ.run("Close All");
 			IJ.log("Finished processing image: " + imagePath);
 		}
 	}

@@ -70,7 +70,7 @@ public class Tracking {
     }
 
     /**
-     * Creates a TrackMate tracker from the specified configuration parameters, in order to track replisomes in the GFP channel.
+     * Creates a TrackMate tracker from the specified configuration parameters.
      * @return TrackMate model object.
      */
     public Model runTracking(ImagePlus imp) {
@@ -97,7 +97,7 @@ public class Tracking {
         settings.detectorSettings.put(DetectorKeys.KEY_DO_MEDIAN_FILTERING, this.trackingConfig.detector_median_filter);
 
         // Filter results of detection
-        FeatureFilter detect_filter_quality = new FeatureFilter("QUALITY", 30, true);
+        FeatureFilter detect_filter_quality = new FeatureFilter("QUALITY", 0, true); //changed from 30 to 0!!         //settings.initialSpotFilterValue = 0.0;
         settings.addSpotFilter(detect_filter_quality);
 
         // Configure tracker
