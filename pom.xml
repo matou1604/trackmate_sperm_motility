@@ -100,7 +100,7 @@
             <url>https://maven.scijava.org/content/groups/public</url>
         </repository>
     </repositories>
-
+    <packaging>jar</packaging>
     <properties>
         <package-name>ch.epfl.bio410</package-name>
         <license.licenseName>gpl_v3</license.licenseName>
