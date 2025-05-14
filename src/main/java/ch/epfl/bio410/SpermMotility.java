@@ -8,7 +8,6 @@ import net.imagej.ImageJ;
 import org.scijava.command.Command;
 import org.scijava.plugin.Plugin;
 
-import java.awt.*;
 import java.io.File;
 import java.io.FilenameFilter;
 import java.io.IOException;
@@ -16,10 +15,8 @@ import java.nio.file.Paths;
 
 import fiji.plugin.trackmate.FeatureModel;
 import fiji.plugin.trackmate.Model;
-import ij.WindowManager;
 
 // import tracking from local package
-import ch.epfl.bio410.utils.utils;
 import ch.epfl.bio410.utils.TrackingConfig;
 import ch.epfl.bio410.tracking.Tracking;
 
@@ -28,11 +25,9 @@ import ch.epfl.bio410.tracking.Tracking;
 @Plugin(type = Command.class, menuPath = "Plugins>FRT>Sperm motility")
 public class SpermMotility implements Command {
 
-	private String path = Paths.get(System.getProperty("user.home")).toString();
+	private final String path = Paths.get(System.getProperty("user.home")).toString();
 	private TrackingConfig config;
 	private String[] fileList = new String[]{};
-	// Colony assignment parameters (TODO: to remove)
-	private final int colony_min_area = 50; // Colony assignment parameters, minimum colony area
 	// Detection parameters
 	private final double radius = 7; 	// Detection parameters, radius of the object in um
 	private final double threshold = 0.357;  // Detection parameters, quality threshold
@@ -46,29 +41,53 @@ public class SpermMotility implements Command {
 
 	public void run() {
 
+		////////////////// User Interface /////////////////////
+
 		GenericDialog dlg = new GenericDialog("Sperm motility");
+		dlg.addMessage("Hey! Welcome to the sperm motility plugin!\n" +
+				"Select the directory containing the tiff images to process.\n" +
+				"You can also modify the tracking parameters.");
+
+		dlg.setInsets(20,0,0);
 		dlg.addDirectoryField("Path to the image", path);
-		dlg.addNumericField("Colony minimum area", colony_min_area, 0);
+
+		dlg.setInsets(10,0,0);
 		dlg.addNumericField("Detection radius (um)", radius, 2);
-		dlg.addNumericField("Detection threshold", threshold, 3);
-		//dlg.addSpace(10);
+		dlg.addNumericField("Quality detection threshold", threshold, 3);
+
+		dlg.setInsets(20,90,0);
 		dlg.addCheckbox("Apply median filter", medianFilter);
+
 		dlg.addNumericField("Max linking distance", maxLinkDistance, 2);
 		dlg.addNumericField("Max gap closing distance", maxGapDistance, 2);
 		dlg.addNumericField("Max frame gap", maxFrameGap, 0);
 		dlg.addNumericField("Track duration filter (min)", durationFilter, 2);
+
+		dlg.setInsets(20,60,0);
+		dlg.addCheckbox("Stop between images?", false);
 		dlg.showDialog();
 
 		if (dlg.wasCanceled()) return;
 
-		// Get user inputs
+
+		////////////////// Get user inputs /////////////////////
+
 		String inputDir = dlg.getNextString();
 		if (inputDir == null || inputDir.isEmpty()) {
 			IJ.log("No directory selected. Exiting.");
 			return;
 		}
-		// Get all the parameters
-		int colonyMinArea = (int) dlg.getNextNumber();
+		// Get the list of .tiff files in the directory
+		File dir = new File(inputDir);
+		FilenameFilter filter = (dir1, name) -> name.toLowerCase().endsWith(".tiff");
+		fileList = dir.list(filter);
+		// If no .tiff files are found, exit
+		if (fileList == null || fileList.length == 0) {
+			IJ.log("No .tiff files found in the directory.");
+			return;
+		}
+
+		// Get all the tracking parameters
 		double detectionRadius = dlg.getNextNumber();
 		double detectionThreshold = dlg.getNextNumber();
 		boolean applyMedianFilter = dlg.getNextBoolean();
@@ -76,11 +95,12 @@ public class SpermMotility implements Command {
 		double gapClosingMaxDistance = dlg.getNextNumber();
 		int frameGap = (int) dlg.getNextNumber();
 		double trackDurationMin = dlg.getNextNumber();
+		boolean stopBetweenImages = dlg.getNextBoolean();
+
 
 
 		// Set the config if needed (use existing if set or no config available)
 		this.config = new TrackingConfig(
-				colonyMinArea,
 				detectionRadius,
 				detectionThreshold,
 				applyMedianFilter,
@@ -94,16 +114,8 @@ public class SpermMotility implements Command {
 		Tracking tracker = new Tracking();
 		tracker.setConfig(config);
 
-		// Get the list of .tiff files in the directory
-		File dir = new File(inputDir);
-		FilenameFilter filter = (dir1, name) -> name.toLowerCase().endsWith(".tiff");
-		fileList = dir.list(filter);
-		if (fileList == null || fileList.length == 0) {
-			IJ.log("No .tiff files found in the directory.");
-			return;
-		}
 
-
+		// Prepare output directory
 		// create "results" folder if it doesn't exist
 		String resultsPath = Paths.get(inputDir, "results").toString();
 		File resultsFolder = new File(resultsPath);
@@ -124,6 +136,7 @@ public class SpermMotility implements Command {
 			String imageNameWithoutExtension = fileName.substring(0, fileName.lastIndexOf('.'));
 
 			IJ.log("Processing image: " + fileName);
+
 			// Open the image
 			ImagePlus imp = IJ.openImage(imagePath);
 			imp.show();
@@ -133,7 +146,7 @@ public class SpermMotility implements Command {
 			// Run tracking on the image
 			Model model = tracker.runTracking(imp);
 			FeatureModel featureModel = model.getFeatureModel();
-			IJ.run("Tile");
+			//IJ.run("Tile");
 			//see https://imagej.net/plugins/trackmate/scripting/scripting#display-spot-edge-and-track-numerical-features-after-tracking for ways to get the features
 
 			File csvSpotsPath = Paths.get(resultsPath, "spots_" + imageNameWithoutExtension + ".csv").toFile();
@@ -146,16 +159,15 @@ public class SpermMotility implements Command {
 			}
 
 			// Look at tiles
-//			new WaitForUserDialog("Image processing complete.\n", "The image " + fileName + " has been processed. \n" +
-//					"The results have been saved to " + resultsPath + ".\n" +
-//					"Press OK to continue to the next image.").show();
+			if (stopBetweenImages){
+				new WaitForUserDialog("Tracking done.\n", "Press OK to continue to the next image.").show();
+			}
 
 			// Close the image
 			IJ.run("Close All");
-			IJ.log("Finished processing image: " + imagePath);
+			IJ.log("Finished processing image: " + imagePath + "\n\n");
 		}
 	}
-
 
 
 

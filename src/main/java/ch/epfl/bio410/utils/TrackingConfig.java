@@ -11,7 +11,6 @@ import java.util.List;
 import java.util.Properties;
 
 public class TrackingConfig {
-    public int colony_min_area;
     public double detector_radius;
     public double detector_threshold;
     public boolean detector_median_filter;
@@ -37,7 +36,6 @@ public class TrackingConfig {
      * - track_duration_min = 8.0
      */
     public TrackingConfig() {
-        this.colony_min_area = 50;
         this.detector_radius = 0.31d;
         this.detector_threshold = 30.0d;
         this.detector_median_filter = true;
@@ -48,7 +46,6 @@ public class TrackingConfig {
     }
     /**
      * Constructor for TrackingConfig.
-     * @param colony_min_area Minimum area of a colony in pixels.
      * @param detector_radius Radius of the object in um.
      * @param detector_threshold Quality threshold.
      * @param detector_median_filter Median filter.
@@ -58,7 +55,6 @@ public class TrackingConfig {
      * @param track_duration_min Duration filter (min duration of a track).
      */
     public TrackingConfig(
-            int colony_min_area,
             double detector_radius,
             double detector_threshold,
             boolean detector_median_filter,
@@ -67,7 +63,6 @@ public class TrackingConfig {
             int tracker_max_frame_gap,
             double track_duration_min
     ) {
-        this.colony_min_area = colony_min_area;
         this.detector_radius = detector_radius;
         this.detector_threshold = detector_threshold;
         this.detector_median_filter = detector_median_filter;
@@ -83,7 +78,7 @@ public class TrackingConfig {
      */
     public static TrackingConfig createFromPropertiesFile(String filename) {
         String config_path = accessConfigPathFromResources(filename);
-        TrackingConfig config = new TrackingConfig(0, 0, 0, false, 0, 0, 0, 0);
+        TrackingConfig config = new TrackingConfig(0, 0, false, 0, 0, 0, 0);
         if (config_path != null) {
             config.loadFromPropertiesFile(config_path);
         }
@@ -97,7 +92,7 @@ public class TrackingConfig {
      * @return TrackingConfig object with the loaded parameters.
      */
     public static TrackingConfig createFromPropertiesFile(File filename) {
-        TrackingConfig config = new TrackingConfig(0, 0, 0, false, 0, 0, 0, 0);
+        TrackingConfig config = new TrackingConfig(0, 0, false, 0, 0, 0, 0);
         if (filename != null) {
             config.loadFromPropertiesFile(filename.getAbsolutePath());
         }
@@ -145,9 +140,6 @@ public class TrackingConfig {
         IJ.log("----- Config :");
         if (this.configPath != null) {
             IJ.log("Config loaded from " + this.configName);
-        }
-        if (showColonyParams) {
-            IJ.log("- Colony minimum area : " + this.colony_min_area + " pixels");
         }
         if (showTrackingParams) {
             IJ.log("- Detector radius : " + this.detector_radius + "um");
@@ -211,7 +203,6 @@ public class TrackingConfig {
             Properties properties = new Properties();
             properties.load(Files.newInputStream(Paths.get(filePath)));
 
-            this.colony_min_area = Integer.parseInt(properties.getProperty("COLONY_MIN_AREA"));
             this.detector_radius = Double.parseDouble(properties.getProperty("DETECTOR_RADIUS"));
             this.detector_threshold = Double.parseDouble(properties.getProperty("DETECTOR_THRESHOLD"));
             this.detector_median_filter = Boolean.parseBoolean(properties.getProperty("DETECTOR_MEDIAN_FILTER"));

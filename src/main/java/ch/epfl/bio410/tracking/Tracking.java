@@ -57,7 +57,6 @@ public class Tracking {
             double track_duration_min
     ) {
         this.trackingConfig = new TrackingConfig(
-                colony_min_area,
                 detector_radius,
                 detector_threshold,
                 detector_median_filter,
