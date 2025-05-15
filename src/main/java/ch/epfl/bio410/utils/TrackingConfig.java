@@ -26,7 +26,6 @@ public class TrackingConfig {
     /**
      * Default constructor for TrackingConfig.
      * Parameters are set to default values :
-     * - colony_min_area = 50
      * - detector_radius = 0.31
      * - detector_threshold = 30.0
      * - detector_median_filter = true
@@ -116,27 +115,26 @@ public class TrackingConfig {
      * Print the tracking configuration parameters.
      */
     public void printTrackingConfig() {
-        printFullConfig(true, false);
+        printFullConfig(true);
     }
     /**
      * Print the full configuration parameters.
      */
     public void printFullConfig() {
-        printFullConfig(true, true);
+        printFullConfig(true);
     }
     /**
      * Print the colony configuration parameters.
      */
     public void printColonyConfig() {
-        printFullConfig(false, true);
+        printFullConfig(false);
     }
 
     /**
      * Print the tracking configuration parameters.
      * @param showTrackingParams Show tracking parameters.
-     * @param showColonyParams Show colony parameters.
      */
-    private void printFullConfig(boolean showTrackingParams, boolean showColonyParams) {
+    private void printFullConfig(boolean showTrackingParams) {
         IJ.log("----- Config :");
         if (this.configPath != null) {
             IJ.log("Config loaded from " + this.configName);

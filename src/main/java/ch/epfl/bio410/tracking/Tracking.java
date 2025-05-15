@@ -47,7 +47,6 @@ public class Tracking {
      * @return
      */
     public TrackingConfig setConfig(
-            int colony_min_area,
             double detector_radius,
             double detector_threshold,
             boolean detector_median_filter,

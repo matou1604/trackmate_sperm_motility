@@ -17,6 +17,7 @@ import fiji.plugin.trackmate.FeatureModel;
 import fiji.plugin.trackmate.Model;
 
 // import tracking from local package
+import ch.epfl.bio410.utils.utils;
 import ch.epfl.bio410.utils.TrackingConfig;
 import ch.epfl.bio410.tracking.Tracking;
 
@@ -63,7 +64,7 @@ public class SpermMotility implements Command {
 		dlg.addNumericField("Max frame gap", maxFrameGap, 0);
 		dlg.addNumericField("Track duration filter (min)", durationFilter, 2);
 
-		dlg.setInsets(20,60,0);
+		dlg.setInsets(20,0,0);
 		dlg.addCheckbox("Stop between images?", false);
 		dlg.showDialog();
 
@@ -96,7 +97,6 @@ public class SpermMotility implements Command {
 		int frameGap = (int) dlg.getNextNumber();
 		double trackDurationMin = dlg.getNextNumber();
 		boolean stopBetweenImages = dlg.getNextBoolean();
-
 
 
 		// Set the config if needed (use existing if set or no config available)
@@ -142,6 +142,7 @@ public class SpermMotility implements Command {
 			imp.show();
 			IJ.run(imp, "Subtract Background...", "stack rolling=50");
 			IJ.run(imp, "Enhance Contrast", "saturated=0.35");
+			IJ.run(imp, "Red", "");
 
 			// Run tracking on the image
 			Model model = tracker.runTracking(imp);
@@ -165,7 +166,7 @@ public class SpermMotility implements Command {
 
 			// Close the image
 			IJ.run("Close All");
-			IJ.log("Finished processing image: " + imagePath + "\n\n");
+			IJ.log("Finished processing image: " + fileName + "\n\n");
 		}
 	}
 
