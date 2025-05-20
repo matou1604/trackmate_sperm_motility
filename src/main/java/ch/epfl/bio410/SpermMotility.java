@@ -37,7 +37,7 @@ public class SpermMotility implements Command {
 	private final double maxLinkDistance = 5; // Tracking parameters, max linking distance between objects
 	private final double maxGapDistance = 20; // Tracking parameters, max gap distance to close a track across frames
 	private final int maxFrameGap = 3; // Tracking parameters, max frame gap allowed for tracking
-	private final double durationFilter = 1; // Tracking parameters, duration filter (min duration of a track)
+	private final double durationFilter = 0.3; // Tracking parameters, duration filter (min duration of a track)
 	// Config
 
 	public void run() {
@@ -156,7 +156,11 @@ public class SpermMotility implements Command {
 				tracker.saveFeaturesToCSV(model, csvSpotsPath, csvTracksPath, imagePath);
 				IJ.log("Results saved.");
 			} catch (IOException e) {
+				IJ.error("Error saving results", "Could not save results to CSV files.\n" +
+						"The file being written is being used in another process.\n" +
+						"Close it and restart.");
 				throw new RuntimeException(e);
+
 			}
 
 			// Look at tiles
