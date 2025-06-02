@@ -53,7 +53,8 @@ public class Tracking {
             double tracker_linking_max_distance,
             double tracker_gap_closing_max_distance,
             int tracker_max_frame_gap,
-            double track_duration_min
+            double track_duration_min,
+            double min_mean_speed
     ) {
         this.trackingConfig = new TrackingConfig(
                 detector_radius,
@@ -62,7 +63,8 @@ public class Tracking {
                 tracker_linking_max_distance,
                 tracker_gap_closing_max_distance,
                 tracker_max_frame_gap,
-                track_duration_min
+                track_duration_min,
+                min_mean_speed
         );
         return this.trackingConfig;
     }
@@ -95,8 +97,8 @@ public class Tracking {
         settings.detectorSettings.put(DetectorKeys.KEY_DO_MEDIAN_FILTERING, this.trackingConfig.detector_median_filter);
 
         // Filter results of detection
-        FeatureFilter detect_filter_quality = new FeatureFilter("QUALITY", 0, true); //changed from 30 to 0!!         //settings.initialSpotFilterValue = 0.0;
-        settings.addSpotFilter(detect_filter_quality);
+        FeatureFilter detect_filter_quality = new FeatureFilter("QUALITY", this.trackingConfig.detector_threshold, true); //changed from 30 to 0!!         //settings.initialSpotFilterValue = 0.0;
+        settings.addSpotFilter(detect_filter_quality); //TODO: should this be 0 or 0.32 as set by user???
 
         // Configure tracker
         settings.trackerFactory = new SparseLAPTrackerFactory();
@@ -108,6 +110,7 @@ public class Tracking {
         settings.trackerSettings.put("ALLOW_TRACK_SPLITTING", false);
         settings.trackerSettings.put("ALLOW_TRACK_MERGING", false);
 
+
         // Add the analyzers for all features
         settings.addAllAnalyzers();
 
@@ -118,6 +121,11 @@ public class Tracking {
                 this.trackingConfig.track_duration_min,
                 true);
         settings.addTrackFilter(track_duration_filter);
+        FeatureFilter detect_filter_speed = new FeatureFilter(
+                "TRACK_MEAN_SPEED",
+                this.trackingConfig.min_mean_speed,
+                true);
+        settings.addTrackFilter(detect_filter_speed);
 
         // Instantiate and run trackmate
         TrackMate trackmate = new TrackMate(model, settings);

@@ -34,11 +34,12 @@ public class SpermMotility implements Command {
 	private final double threshold = 0.357;  // Detection parameters, quality threshold
 	private final boolean medianFilter = true; // Detection parameters, do median filter (GFP channel only, before detection in TrackMate)
 	// Tracking parameters
-	private final double maxLinkDistance = 5; // Tracking parameters, max linking distance between objects
-	private final double maxGapDistance = 20; // Tracking parameters, max gap distance to close a track across frames
-	private final int maxFrameGap = 3; // Tracking parameters, max frame gap allowed for tracking
+	private final double maxLinkDistance = 15; // Tracking parameters, max linking distance between objects
+	private final double maxGapDistance = 15; // Tracking parameters, max gap distance to close a track across frames
+	private final int maxFrameGap = 5; // Tracking parameters, max frame gap allowed for tracking
 	private final double durationFilter = 0.3; // Tracking parameters, duration filter (min duration of a track)
 	// Config
+	private final double minMeanSpeed = 5; // Minimum mean speed of a track in um/s
 
 	public void run() {
 
@@ -47,7 +48,8 @@ public class SpermMotility implements Command {
 		GenericDialog dlg = new GenericDialog("Sperm motility");
 		dlg.addMessage("Hey! Welcome to the sperm motility plugin!\n" +
 				"Select the directory containing the tiff images to process.\n" +
-				"You can also modify the tracking parameters.");
+				"You can also modify the tracking parameters. \n" +
+				"This version of the plugin does not allow splitting or merging of tracks.");
 
 		dlg.setInsets(20,0,0);
 		dlg.addDirectoryField("Path to the image", path);
@@ -63,6 +65,7 @@ public class SpermMotility implements Command {
 		dlg.addNumericField("Max gap closing distance", maxGapDistance, 2);
 		dlg.addNumericField("Max frame gap", maxFrameGap, 0);
 		dlg.addNumericField("Track duration filter (min)", durationFilter, 2);
+		dlg.addNumericField("Minimum mean speed (um/s)", minMeanSpeed, 2);
 
 		dlg.setInsets(20,0,0);
 		dlg.addCheckbox("Stop between images?", false);
@@ -96,6 +99,7 @@ public class SpermMotility implements Command {
 		double gapClosingMaxDistance = dlg.getNextNumber();
 		int frameGap = (int) dlg.getNextNumber();
 		double trackDurationMin = dlg.getNextNumber();
+		double minMeanSpeed = dlg.getNextNumber();
 		boolean stopBetweenImages = dlg.getNextBoolean();
 
 
@@ -107,7 +111,8 @@ public class SpermMotility implements Command {
 				linkingMaxDistance,
 				gapClosingMaxDistance,
 				frameGap,
-				trackDurationMin
+				trackDurationMin,
+				minMeanSpeed
 		);
 
 		// TRACKING

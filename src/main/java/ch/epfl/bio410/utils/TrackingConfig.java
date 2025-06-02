@@ -18,6 +18,7 @@ public class TrackingConfig {
     public double tracker_gap_closing_max_distance;
     public int tracker_max_frame_gap;
     public double track_duration_min;
+    public double min_mean_speed;
 
     public String configPath = null;
     public String configName = null;
@@ -42,6 +43,7 @@ public class TrackingConfig {
         this.tracker_gap_closing_max_distance = 1.0d;
         this.tracker_max_frame_gap = 4;
         this.track_duration_min = 8.0d;
+        this.min_mean_speed = 5.0d;
     }
     /**
      * Constructor for TrackingConfig.
@@ -52,6 +54,7 @@ public class TrackingConfig {
      * @param tracker_gap_closing_max_distance Max gap distance to close a track across frames.
      * @param tracker_max_frame_gap Max frame gap allowed for tracking.
      * @param track_duration_min Duration filter (min duration of a track).
+     * @param min_mean_speed Minimum mean speed of a track in um/s.
      */
     public TrackingConfig(
             double detector_radius,
@@ -60,7 +63,8 @@ public class TrackingConfig {
             double tracker_linking_max_distance,
             double tracker_gap_closing_max_distance,
             int tracker_max_frame_gap,
-            double track_duration_min
+            double track_duration_min,
+            double min_mean_speed
     ) {
         this.detector_radius = detector_radius;
         this.detector_threshold = detector_threshold;
@@ -69,6 +73,7 @@ public class TrackingConfig {
         this.tracker_gap_closing_max_distance = tracker_gap_closing_max_distance;
         this.tracker_max_frame_gap = tracker_max_frame_gap;
         this.track_duration_min = track_duration_min;
+        this.min_mean_speed = min_mean_speed;
     }
     /**
      * Create a TrackingConfig object from a properties file.
@@ -77,7 +82,7 @@ public class TrackingConfig {
      */
     public static TrackingConfig createFromPropertiesFile(String filename) {
         String config_path = accessConfigPathFromResources(filename);
-        TrackingConfig config = new TrackingConfig(0, 0, false, 0, 0, 0, 0);
+        TrackingConfig config = new TrackingConfig(0, 0, false, 0, 0, 0, 0, 0);
         if (config_path != null) {
             config.loadFromPropertiesFile(config_path);
         }
@@ -91,7 +96,7 @@ public class TrackingConfig {
      * @return TrackingConfig object with the loaded parameters.
      */
     public static TrackingConfig createFromPropertiesFile(File filename) {
-        TrackingConfig config = new TrackingConfig(0, 0, false, 0, 0, 0, 0);
+        TrackingConfig config = new TrackingConfig(0, 0, false, 0, 0, 0, 0,0);
         if (filename != null) {
             config.loadFromPropertiesFile(filename.getAbsolutePath());
         }
@@ -140,13 +145,14 @@ public class TrackingConfig {
             IJ.log("Config loaded from " + this.configName);
         }
         if (showTrackingParams) {
-            IJ.log("- Detector radius : " + this.detector_radius + "um");
+            IJ.log("- Detector radius : " + this.detector_radius + " um");
             IJ.log("- Detector quality threshold : " + this.detector_threshold);
             IJ.log("- Detector using median filter : " + this.detector_median_filter);
-            IJ.log("- Tracker max distance for linking : " + this.tracker_linking_max_distance + "um");
-            IJ.log("- Tracker gap closing max distance : " + this.tracker_gap_closing_max_distance + "um");
+            IJ.log("- Tracker max distance for linking : " + this.tracker_linking_max_distance + " um");
+            IJ.log("- Tracker gap closing max distance : " + this.tracker_gap_closing_max_distance + " um");
             IJ.log("- Tracker max frame gap for closing : " + this.tracker_max_frame_gap);
-            IJ.log("- Track minimum duration filter : " + this.track_duration_min + "frames");
+            IJ.log("- Track minimum duration filter : " + this.track_duration_min + " seconds?");
+            IJ.log("- Track minimum mean speed : " + this.min_mean_speed + " um/s");
         }
         IJ.log("----- End of config");
     }
