@@ -155,17 +155,17 @@ public class SpermMotility implements Command {
 			//IJ.run("Tile");
 			//see https://imagej.net/plugins/trackmate/scripting/scripting#display-spot-edge-and-track-numerical-features-after-tracking for ways to get the features
 
-			File csvSpotsPath = Paths.get(resultsPath, "spots_" + imageNameWithoutExtension + ".csv").toFile();
+			//File csvSpotsPath = Paths.get(resultsPath, "spots_" + imageNameWithoutExtension + ".csv").toFile();
 			File csvTracksPath = Paths.get(resultsPath, "tracks_" + imageNameWithoutExtension + ".csv").toFile();
 			try {
-				tracker.saveFeaturesToCSV(model, csvSpotsPath, csvTracksPath, imagePath);
+				tracker.saveFeaturesToCSV(model, csvTracksPath, imagePath);
+				tracker.cleanTracksCSV(csvTracksPath);
 				IJ.log("Results saved.");
 			} catch (IOException e) {
 				IJ.error("Error saving results", "Could not save results to CSV files.\n" +
 						"The file being written is being used in another process.\n" +
 						"Close it and restart.");
 				throw new RuntimeException(e);
-
 			}
 
 			// Look at tiles

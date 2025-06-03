@@ -202,4 +202,15 @@ public class utils {
     }
 
 
+    public static boolean isNumeric(String string) {
+        if (string == null || string.isEmpty()) {
+            return false;
+        }
+        try {
+            Double.parseDouble(string);
+            return true;
+        } catch (NumberFormatException e) {
+            return false;
+        }
+    }
 }
