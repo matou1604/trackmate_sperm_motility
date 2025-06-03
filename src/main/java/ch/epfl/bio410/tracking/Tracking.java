@@ -1,7 +1,6 @@
 package ch.epfl.bio410.tracking;
 
 import ch.epfl.bio410.utils.utils;
-import fiji.plugin.trackmate.visualization.PerTrackFeatureColorGenerator;
 import ij.IJ;
 import ij.ImagePlus;
 
@@ -104,9 +103,17 @@ public class Tracking {
         settings.detectorSettings.put(DetectorKeys.KEY_THRESHOLD, this.trackingConfig.detector_threshold);
         settings.detectorSettings.put(DetectorKeys.KEY_DO_MEDIAN_FILTERING, this.trackingConfig.detector_median_filter);
 
+//        // filter by quality NO ALREADY DONE :)
+//        FeatureFilter qualityFilter = new FeatureFilter(
+//                DetectorKeys.KEY_THRESHOLD,
+//                this.trackingConfig.detector_threshold,
+//                true);
+//        settings.addSpotFilter(qualityFilter);
+
         // Filter results of detection
-        FeatureFilter detect_filter_quality = new FeatureFilter("QUALITY", this.trackingConfig.detector_threshold, true); //changed from 30 to 0!!         //settings.initialSpotFilterValue = 0.0;
-        settings.addSpotFilter(detect_filter_quality); //TODO: should this be 0 or 0.32 as set by user???
+        //FeatureFilter detect_filter_quality = new FeatureFilter("QUALITY", this.trackingConfig.detector_threshold, true); //changed from 30 to 0!!         //settings.initialSpotFilterValue = 0.0;
+        //settings.addSpotFilter(detect_filter_quality);
+
 
         // Configure tracker
         settings.trackerFactory = new SparseLAPTrackerFactory();
@@ -175,7 +182,7 @@ public class Tracking {
      * @param csvFileTracks File to save the tracks features
      * @throws IOException
      */
-    public void saveFeaturesToCSV(Model model, File csvFileTracks, String imagePath) throws IOException { // removed File csvFileSpots,
+    public void saveFeaturesToCSV(Model model, File csvFileSpots, File csvFileTracks, String imagePath) throws IOException { // removed File csvFileSpots,
         // Create a selection model for the TrackMate model
         SelectionModel sm = new SelectionModel(model);
         DisplaySettings ds = this.displaySettings;

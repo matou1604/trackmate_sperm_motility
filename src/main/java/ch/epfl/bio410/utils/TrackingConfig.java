@@ -145,14 +145,14 @@ public class TrackingConfig {
             IJ.log("Config loaded from " + this.configName);
         }
         if (showTrackingParams) {
-            IJ.log("- Detector radius : " + this.detector_radius + " um");
+            IJ.log("- Detector radius : " + this.detector_radius + " µm");
             IJ.log("- Detector quality threshold : " + this.detector_threshold);
             IJ.log("- Detector using median filter : " + this.detector_median_filter);
-            IJ.log("- Tracker max distance for linking : " + this.tracker_linking_max_distance + " um");
-            IJ.log("- Tracker gap closing max distance : " + this.tracker_gap_closing_max_distance + " um");
+            IJ.log("- Tracker max distance for linking : " + this.tracker_linking_max_distance + " µm");
+            IJ.log("- Tracker gap closing max distance : " + this.tracker_gap_closing_max_distance + " µm");
             IJ.log("- Tracker max frame gap for closing : " + this.tracker_max_frame_gap);
-            IJ.log("- Track minimum duration filter : " + this.track_duration_min + " seconds?");
-            IJ.log("- Track minimum mean speed : " + this.min_mean_speed + " um/s");
+            IJ.log("- Track minimum duration filter : " + this.track_duration_min + " seconds");
+            IJ.log("- Track minimum mean speed : " + this.min_mean_speed + " µm/s");
         }
         IJ.log("----- End of config");
     }
