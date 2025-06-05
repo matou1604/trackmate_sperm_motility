@@ -54,13 +54,20 @@ public class SpermMotility implements Command {
 		dlg.setInsets(20,0,0);
 		dlg.addDirectoryField("Path to the image", path);
 
+		dlg.setInsets(20,0,0);
+		dlg.addMessage("Preprocessing:");
+		dlg.addNumericField("Background subtraction (pxl)", 50, 0);
+
 		dlg.setInsets(10,0,0);
+		dlg.addMessage("Spot detection:");
 		dlg.addNumericField("Detection radius (um)", radius, 2);
 		dlg.addNumericField("Quality detection threshold", threshold, 3);
 
 		dlg.setInsets(20,90,0);
 		dlg.addCheckbox("Apply median filter", medianFilter);
 
+		dlg.setInsets(10,0,0);
+		dlg.addMessage("Tracking:");
 		dlg.addNumericField("Max linking distance", maxLinkDistance, 2);
 		dlg.addNumericField("Max gap closing distance", maxGapDistance, 2);
 		dlg.addNumericField("Max frame gap", maxFrameGap, 0);
@@ -92,6 +99,7 @@ public class SpermMotility implements Command {
 		}
 
 		// Get all the tracking parameters
+		int subtractionRadius = (int) dlg.getNextNumber();
 		double detectionRadius = dlg.getNextNumber();
 		double detectionThreshold = dlg.getNextNumber();
 		boolean applyMedianFilter = dlg.getNextBoolean();
@@ -105,6 +113,7 @@ public class SpermMotility implements Command {
 
 		// Set the config if needed (use existing if set or no config available)
 		this.config = new TrackingConfig(
+				subtractionRadius,
 				detectionRadius,
 				detectionThreshold,
 				applyMedianFilter,
@@ -127,9 +136,9 @@ public class SpermMotility implements Command {
 
 		if (!resultsFolder.exists()) {
 			if (resultsFolder.mkdir()) {
-				IJ.log("Directory is created!");
+				IJ.log("Results directory is created!");
 			} else {
-				IJ.log("Failed to create directory!");
+				IJ.log("Failed to create results directory!");
 				throw new RuntimeException("Failed to create results directory. Aborting.");
 			}
 		}
@@ -145,9 +154,9 @@ public class SpermMotility implements Command {
 			// Open the image
 			ImagePlus imp = IJ.openImage(imagePath);
 			imp.show();
-			IJ.run(imp, "Subtract Background...", "stack rolling=50");
+			IJ.run(imp, "Subtract Background...", "stack rolling="+subtractionRadius);
 			IJ.run(imp, "Enhance Contrast", "saturated=0.35");
-			IJ.run(imp, "Red", "");
+			IJ.run(imp, "Cyan", "");
 
 			// Run tracking on the image
 			Model model = tracker.runTracking(imp);

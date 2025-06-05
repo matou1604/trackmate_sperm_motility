@@ -1,6 +1,7 @@
 package ch.epfl.bio410.tracking;
 
 import ch.epfl.bio410.utils.utils;
+import fiji.plugin.trackmate.visualization.PerTrackFeatureColorGenerator;
 import ij.IJ;
 import ij.ImagePlus;
 
@@ -23,6 +24,7 @@ import fiji.plugin.trackmate.visualization.table.TrackTableView;
 import fiji.plugin.trackmate.visualization.hyperstack.HyperStackDisplayer;
 import fiji.plugin.trackmate.FeatureModel;
 import fiji.plugin.trackmate.Model;
+import ij.gui.WaitForUserDialog;
 import org.apache.commons.csv.CSVRecord;
 
 
@@ -44,6 +46,7 @@ public class Tracking {
     }
     /**
      * Set the configuration parameters for tracking.
+     * @param subtraction_radius Radius for background subtraction in pixels
      * @param detector_radius Radius of the object in um
      * @param detector_threshold Quality threshold
      * @param detector_median_filter Median filter
@@ -54,6 +57,7 @@ public class Tracking {
      * @return
      */
     public TrackingConfig setConfig(
+            int subtraction_radius,
             double detector_radius,
             double detector_threshold,
             boolean detector_median_filter,
@@ -64,6 +68,7 @@ public class Tracking {
             double min_mean_speed
     ) {
         this.trackingConfig = new TrackingConfig(
+                subtraction_radius,
                 detector_radius,
                 detector_threshold,
                 detector_median_filter,
@@ -103,13 +108,9 @@ public class Tracking {
         settings.detectorSettings.put(DetectorKeys.KEY_THRESHOLD, this.trackingConfig.detector_threshold);
         settings.detectorSettings.put(DetectorKeys.KEY_DO_MEDIAN_FILTERING, this.trackingConfig.detector_median_filter);
 
-//        // filter by quality NO ALREADY DONE :)
-//        FeatureFilter qualityFilter = new FeatureFilter(
-//                DetectorKeys.KEY_THRESHOLD,
-//                this.trackingConfig.detector_threshold,
-//                true);
-//        settings.addSpotFilter(qualityFilter);
-
+        // filter by quality NO ALREADY DONE :)
+        //FeatureFilter qualityFilter = new FeatureFilter(DetectorKeys.KEY_THRESHOLD,this.trackingConfig.detector_threshold,true);
+        //settings.addSpotFilter(qualityFilter);
         // Filter results of detection
         //FeatureFilter detect_filter_quality = new FeatureFilter("QUALITY", this.trackingConfig.detector_threshold, true); //changed from 30 to 0!!         //settings.initialSpotFilterValue = 0.0;
         //settings.addSpotFilter(detect_filter_quality);
@@ -129,18 +130,16 @@ public class Tracking {
         // Add the analyzers for all features
         settings.addAllAnalyzers();
 
-
         // Configure track filter
         FeatureFilter track_duration_filter = new FeatureFilter(
                 "TRACK_DURATION",
                 this.trackingConfig.track_duration_min,
                 true);
         settings.addTrackFilter(track_duration_filter);
-        //FeatureFilter detect_filter_speed = new FeatureFilter(
-               // "TRACK_MEAN_SPEED",
-               // this.trackingConfig.min_mean_speed,
-               // true);
+        //FeatureFilter detect_filter_speed = new FeatureFilter("TRACK_MEAN_SPEED",this.trackingConfig.min_mean_speed,true);
         //settings.addTrackFilter(detect_filter_speed);
+
+
 
         // Instantiate and run trackmate
         TrackMate trackmate = new TrackMate(model, settings);
@@ -156,17 +155,30 @@ public class Tracking {
             return null;
         }
 
+        // Check spot collection isn't empty
+        IJ.log(String.valueOf(model.getSpots().getNSpots(false)));
+        if (model.getSpots().getNSpots(false) == 0) {
+            IJ.log("Spot collection empty. No spots detected.");
+            if (true) { // TODO: add this.stopbetweenImages to config
+                // TODO: et tester avec images sans spots
+                new WaitForUserDialog("Spot collection empty.", "No spots detected. \nPress OK to continue to the next image.").show();
+            }
+            return null; // Exit or handle the case as needed
+        }
+
+
         // Display the results on top of the image
         SelectionModel selectionModel = new SelectionModel(model);
         DisplaySettings displaySettings = DisplaySettingsIO.readUserDefault();
         this.displaySettings = displaySettings;
         // Color tracks and spots by ID
-        displaySettings.setTrackColorBy(DisplaySettings.TrackMateObject.TRACKS, TrackIndexAnalyzer.TRACK_INDEX);
-        displaySettings.setSpotColorBy(DisplaySettings.TrackMateObject.TRACKS, TrackIndexAnalyzer.TRACK_INDEX);
-        // Use metric to color tracks
-//        displaySettings.setTrackColorBy(DisplaySettings.TrackMateObject.TRACKS, "TRACK_MEAN_SPEED");
-//        displaySettings.setSpotColorBy(DisplaySettings.TrackMateObject.TRACKS, "TRACK_MEAN_SPEED");
-        //PerTrackFeatureColorGenerator trackColor = PerTrackFeatureColorGenerator(model, "TRACK_DURATION");
+        //displaySettings.setTrackColorBy(DisplaySettings.TrackMateObject.TRACKS, TrackIndexAnalyzer.TRACK_INDEX);
+        //displaySettings.setSpotColorBy(DisplaySettings.TrackMateObject.TRACKS, TrackIndexAnalyzer.TRACK_INDEX);
+
+        // Color tracks and spots by MEAN_SPEED     // Use metric to color tracks
+        displaySettings.setTrackColorBy(DisplaySettings.TrackMateObject.TRACKS, "TRACK_MEAN_SPEED");
+        displaySettings.setSpotColorBy(DisplaySettings.TrackMateObject.TRACKS, "TRACK_MEAN_SPEED");
+        //PerTrackFeatureColorGenerator trackColor = PerTrackFeatureColorGenerator(model, "TRACK_DURATION",);
         HyperStackDisplayer displayer = new HyperStackDisplayer(model, selectionModel, imp, displaySettings);
         displayer.render();
         displayer.refresh();
@@ -195,7 +207,7 @@ public class Tracking {
         TrackTableView trackTableView = new TrackTableView(model, sm, ds, imagePath);
 
         // Export the tables to CSV files
-        //trackTableView.getSpotTable().exportToCsv(csvFileSpots);
+        //trackTableView.getSpotTable().exportToCsv(csvFileSpots); //TODO: uncomment if you want to save spots
         trackTableView.getTrackTable().exportToCsv(csvFileTracks);
 
         // Save all spots table (includes all spots, even those not in tracks)
@@ -219,7 +231,15 @@ public class Tracking {
         File cleanedCsvFile = new File(csvFileTracks.getParent(), csvFileTracks.getName());
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(cleanedCsvFile))) {
             // Write the header
-            writer.write("LABEL,TRACK_ID,NUMBER_SPOTS,NUMBER_GAPS,TRACK_DURATION,TRACK_DISPLACEMENT,TRACK_MEAN_SPEED,TOTAL_DISTANCE_TRAVELED,MEAN_STRAIGHT_LINE_SPEED,LINEARITY_OF_FORWARD_PROGRESSION, MOTILE\n");
+            writer.write("LABEL,TRACK_ID,NUMBER_SPOTS,NUMBER_GAPS,TRACK_DURATION,TRACK_DISPLACEMENT,TRACK_MEAN_SPEED,TOTAL_DISTANCE_TRAVELED,MEAN_STRAIGHT_LINE_SPEED,LINEARITY_OF_FORWARD_PROGRESSION,MOTILE,PERCENT_MOTILITY\n");
+            // Calculate percent motility
+            long totalTracks = records.size() - 3; // Exclude the header row
+            long motileTracks = records.stream()
+                    .skip(3) // Skip the header row
+                    .filter(record -> utils.isNumeric(record.get("TRACK_MEAN_SPEED")) && Double.parseDouble(record.get("TRACK_MEAN_SPEED")) > this.trackingConfig.min_mean_speed)
+                    .count();
+
+
             // Write the cleaned records
             for (CSVRecord record : records) {
                 String label = record.get("LABEL");
@@ -229,16 +249,20 @@ public class Tracking {
                 String trackDuration = record.get("TRACK_DURATION");
                 String trackDisplacement = record.get("TRACK_DISPLACEMENT");
                 String trackMeanSpeed = record.get("TRACK_MEAN_SPEED");
-                String motile = ""; // add a column called "motile" with value 1 if trackMeanSpeed > 5 µm/s, else 0
-                if (utils.isNumeric(record.get("TRACK_MEAN_SPEED")) && Double.parseDouble(record.get("TRACK_MEAN_SPEED")) > this.trackingConfig.min_mean_speed) {
-                    motile = "1";
-                } else if(utils.isNumeric(record.get("TRACK_MEAN_SPEED")) && Double.parseDouble(record.get("TRACK_MEAN_SPEED")) <= this.trackingConfig.min_mean_speed) {
-                    motile = "0";
-                }
                 String totalDistanceTraveled = record.get("TOTAL_DISTANCE_TRAVELED");
                 String meanStraightLineSpeed = record.get("MEAN_STRAIGHT_LINE_SPEED");
                 String linearityOfForwardProgression = record.get("LINEARITY_OF_FORWARD_PROGRESSION");
-                writer.write(label + "," + trackId + "," + numberSpots + "," + numberGaps + "," + trackDuration + "," + trackDisplacement + "," + trackMeanSpeed + "," + totalDistanceTraveled + "," + meanStraightLineSpeed + "," + linearityOfForwardProgression + "," + motile + "\n");
+                String motile = ""; // add a column called "motile" with value 1 if trackMeanSpeed > 5 µm/s, else 0
+                if (utils.isNumeric(record.get("TRACK_MEAN_SPEED")) && Double.parseDouble(record.get("TRACK_MEAN_SPEED")) > this.trackingConfig.min_mean_speed) {
+                    motile = "1";
+                } else if (utils.isNumeric(record.get("TRACK_MEAN_SPEED")) && Double.parseDouble(record.get("TRACK_MEAN_SPEED")) <= this.trackingConfig.min_mean_speed) {
+                    motile = "0";
+                }
+                String percentMotility = "";
+                if (utils.isNumeric(record.get("TRACK_MEAN_SPEED"))) {
+                    percentMotility = String.valueOf((double) motileTracks / totalTracks * 100);
+                }
+                    writer.write(label + "," + trackId + "," + numberSpots + "," + numberGaps + "," + trackDuration + "," + trackDisplacement + "," + trackMeanSpeed + "," + totalDistanceTraveled + "," + meanStraightLineSpeed + "," + linearityOfForwardProgression + "," + motile + "," + percentMotility + "\n");
             }
         }
     }
