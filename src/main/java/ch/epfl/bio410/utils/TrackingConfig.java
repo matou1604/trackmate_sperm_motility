@@ -20,7 +20,7 @@ public class TrackingConfig {
     public int tracker_max_frame_gap;
     public double track_duration_min;
     public double min_mean_speed;
-    public int substraction_radius;
+    public int subtraction_radius;
 
     public String configPath = null;
     public String configName = null;
@@ -38,19 +38,19 @@ public class TrackingConfig {
      * - track_duration_min = 8.0
      */
     public TrackingConfig() {
-        this.substraction_radius = 50;
-        this.detector_radius = 0.31d;
-        this.detector_threshold = 30.0d;
+        this.subtraction_radius = 50;
+        this.detector_radius = 3.5d;
+        this.detector_threshold = 0.3d;
         this.detector_median_filter = true;
-        this.tracker_linking_max_distance = 1.0d;
-        this.tracker_gap_closing_max_distance = 1.0d;
-        this.tracker_max_frame_gap = 4;
-        this.track_duration_min = 8.0d;
+        this.tracker_linking_max_distance = 15d;
+        this.tracker_gap_closing_max_distance = 15d;
+        this.tracker_max_frame_gap = 5;
+        this.track_duration_min = 0.3d;
         this.min_mean_speed = 5.0d;
     }
     /**
      * Constructor for TrackingConfig.
-     * @param substraction_radius Radius for background subtraction in pixels.
+     * @param subtraction_radius Radius for background subtraction in pixels.
      * @param detector_radius Radius of the object in um.
      * @param detector_threshold Quality threshold.
      * @param detector_median_filter Median filter.
@@ -61,7 +61,7 @@ public class TrackingConfig {
      * @param min_mean_speed Minimum mean speed of a track in um/s.
      */
     public TrackingConfig(
-            int substraction_radius,
+            int subtraction_radius,
             double detector_radius,
             double detector_threshold,
             boolean detector_median_filter,
@@ -71,7 +71,7 @@ public class TrackingConfig {
             double track_duration_min,
             double min_mean_speed
     ) {
-        this.substraction_radius = substraction_radius;
+        this.subtraction_radius = subtraction_radius;
         this.detector_radius = detector_radius;
         this.detector_threshold = detector_threshold;
         this.detector_median_filter = detector_median_filter;
@@ -151,6 +151,7 @@ public class TrackingConfig {
             IJ.log("Config loaded from " + this.configName);
         }
         if (showTrackingParams) {
+            IJ.log("- Background subtraction radius : " + this.subtraction_radius + " pxl");
             IJ.log("- Detector radius : " + this.detector_radius + " µm");
             IJ.log("- Detector quality threshold : " + this.detector_threshold);
             IJ.log("- Detector using median filter : " + this.detector_median_filter);

@@ -30,7 +30,7 @@ public class SpermMotility implements Command {
 	private TrackingConfig config;
 	private String[] fileList = new String[]{};
 	// Detection parameters
-	private final double radius = 7; 	// Detection parameters, radius of the object in um
+	private final double radius = 3.5; 	// Detection parameters, radius of the object in um
 	private final double threshold = 0.357;  // Detection parameters, quality threshold
 	private final boolean medianFilter = true; // Detection parameters, do median filter (GFP channel only, before detection in TrackMate)
 	// Tracking parameters
@@ -58,24 +58,28 @@ public class SpermMotility implements Command {
 		dlg.addMessage("Preprocessing:");
 		dlg.addNumericField("Background subtraction (pxl)", 50, 0);
 
-		dlg.setInsets(10,0,0);
+		dlg.setInsets(15,0,0);
 		dlg.addMessage("Spot detection:");
 		dlg.addNumericField("Detection radius (um)", radius, 2);
 		dlg.addNumericField("Quality detection threshold", threshold, 3);
 
-		dlg.setInsets(20,90,0);
+		dlg.setInsets(0,90,0);
 		dlg.addCheckbox("Apply median filter", medianFilter);
 
-		dlg.setInsets(10,0,0);
+		dlg.setInsets(15,0,0);
 		dlg.addMessage("Tracking:");
-		dlg.addNumericField("Max linking distance", maxLinkDistance, 2);
-		dlg.addNumericField("Max gap closing distance", maxGapDistance, 2);
+		dlg.addNumericField("Max linking distance (µm)", maxLinkDistance, 2);
+		dlg.addNumericField("Max gap closing distance (µm)", maxGapDistance, 2);
 		dlg.addNumericField("Max frame gap", maxFrameGap, 0);
 		dlg.addNumericField("Track duration filter (min)", durationFilter, 2);
 		dlg.addNumericField("Minimum mean speed (um/s)", minMeanSpeed, 2);
 
-		dlg.setInsets(20,0,0);
-		dlg.addCheckbox("Stop between images?", false);
+//		dlg.setInsets(20,0,0);
+//		dlg.addImage(IJ.openImage("C:\\Users\\mathi\\OneDrive\\Documents\\EPFL\\PDM Harvard\\Trackmate\\trackmate_sperm_motility\\src\\images\\color.png"));
+//		IJ.run("Size...", "width=500 height=500 constrain");
+
+		dlg.setInsets(20,10,0);
+		dlg.addCheckbox("Stop between images", false);
 		dlg.showDialog();
 
 		if (dlg.wasCanceled()) return;
@@ -149,6 +153,7 @@ public class SpermMotility implements Command {
 			String imagePath = Paths.get(inputDir, fileName).toString();
 			String imageNameWithoutExtension = fileName.substring(0, fileName.lastIndexOf('.'));
 
+			IJ.log((java.util.Arrays.asList(fileList).indexOf(fileName) + 1) + "/" + fileList.length);
 			IJ.log("Processing image: " + fileName);
 
 			// Open the image
@@ -179,7 +184,18 @@ public class SpermMotility implements Command {
 
 			// Look at tiles
 			if (stopBetweenImages){
-				new WaitForUserDialog("Tracking done.\n", "Press OK to continue to the next image.").show();
+				new WaitForUserDialog("Tracking check.\n", "Check tracking results.").show();
+
+				GenericDialog dialog = new GenericDialog("Tracking done");
+				dialog.addMessage("Press OK to continue to the next image.");
+				dialog.setCancelLabel("Cancel");
+				dialog.setOKLabel("OK");
+				dialog.showDialog();
+
+				if (dialog.wasCanceled()) {
+					IJ.log("User canceled the operation or closed the dialog. Exiting plugin.");
+					return;
+				}
 			}
 
 			// Close the image

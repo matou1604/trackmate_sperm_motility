@@ -231,7 +231,7 @@ public class Tracking {
         File cleanedCsvFile = new File(csvFileTracks.getParent(), csvFileTracks.getName());
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(cleanedCsvFile))) {
             // Write the header
-            writer.write("LABEL,TRACK_ID,NUMBER_SPOTS,NUMBER_GAPS,TRACK_DURATION,TRACK_DISPLACEMENT,TRACK_MEAN_SPEED,TOTAL_DISTANCE_TRAVELED,MEAN_STRAIGHT_LINE_SPEED,LINEARITY_OF_FORWARD_PROGRESSION,MOTILE,PERCENT_MOTILITY\n");
+            writer.write("LABEL,TRACK_ID,NUMBER_SPOTS,NUMBER_GAPS,TRACK_DURATION,TRACK_DISPLACEMENT,TRACK_MEAN_SPEED,TOTAL_DISTANCE_TRAVELED,MEAN_STRAIGHT_LINE_SPEED,LINEARITY_OF_FORWARD_PROGRESSION,MOTILE (mean_speed > "+this.trackingConfig.min_mean_speed+"),PERCENT_MOTILITY (mean_speed > "+this.trackingConfig.min_mean_speed+")\n");
             // Calculate percent motility
             long totalTracks = records.size() - 3; // Exclude the header row
             long motileTracks = records.stream()
