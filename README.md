@@ -1,3 +1,5 @@
+<img src="src/images/sperms.png" alt="Logo" width="30" align="right" vspace = "26"/>
+
 # Sperm Motility
 
 This **Fiji plugin** is intended to provide an automated analysis 
@@ -79,7 +81,6 @@ If you want to see the results of the analysis, you can check the ***Stop betwee
 
 This plugin is based on the [Trackmate](https://imagej.net/plugins/trackmate) plugin, which is a powerful tool for tracking objects in images.
 It is a plugin written in Java that scripts the trackmate plugin to automate it.
-
 It uses the [CLIJ2](https://clij.github.io/clij2-docs/) library for GPU-accelerated image processing, which allows for fast processing of large images.
 
 
@@ -101,6 +102,11 @@ The file `tracks_nameofinpoutimages.csv` contains the following columns:
 12. [x] PERCENT_MOTILITY: the percentage of motile tracks in the image, calculated as the number of motile tracks divided by the total number of tracks times 100.
 
 For more information on the feature columns of the result file, you can consult the [Trackmate documentation](https://imagej.net/plugins/trackmate/analyzers/).
+
+<div style="text-align: center; padding: 5px;">
+    <img style="width: 90%; margin-top: 10px; margin-bottom: 10px;" src="src/images/results.png" alt="results">
+</div>
+
 
 ## Hardware requirements
 The plugin is designed to work with any time-lapse images of small round dots. 
