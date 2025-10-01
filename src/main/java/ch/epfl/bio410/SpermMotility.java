@@ -2,6 +2,7 @@ package ch.epfl.bio410;
 
 import ij.IJ;
 import ij.ImagePlus;
+import ij.WindowManager;
 import ij.gui.GenericDialog;
 import ij.gui.WaitForUserDialog;
 import net.imagej.ImageJ;
@@ -80,6 +81,9 @@ public class SpermMotility implements Command {
 
 		dlg.setInsets(20,10,0);
 		dlg.addCheckbox("Stop between images", false);
+		dlg.setInsets(0,10,0);
+
+		dlg.addCheckbox("Skip already analysed images", false);
 		dlg.showDialog();
 
 		if (dlg.wasCanceled()) return;
@@ -113,6 +117,7 @@ public class SpermMotility implements Command {
 		double trackDurationMin = dlg.getNextNumber();
 		double minMeanSpeed = dlg.getNextNumber();
 		boolean stopBetweenImages = dlg.getNextBoolean();
+		boolean skipAnalysedImages = dlg.getNextBoolean();
 
 
 		// Set the config if needed (use existing if set or no config available)
@@ -147,6 +152,8 @@ public class SpermMotility implements Command {
 			}
 		}
 
+		IJ.run("Overlay Options...", "stroke=none width=20 fill=none set"); //FIXME
+
 
 		// start for loop processing and tracking each image in loop one at a time
 		for (String fileName : fileList) {
@@ -154,11 +161,19 @@ public class SpermMotility implements Command {
 			String imageNameWithoutExtension = fileName.substring(0, fileName.lastIndexOf('.'));
 
 			IJ.log((java.util.Arrays.asList(fileList).indexOf(fileName) + 1) + "/" + fileList.length);
+
+			if(skipAnalysedImages && utils.FileExists(inputDir, "tracks_" + imageNameWithoutExtension + ".csv")){
+				IJ.log("Skipping already analysed image: " + fileName);
+				continue;
+			}
+
 			IJ.log("Processing image: " + fileName);
 
 			// Open the image
 			ImagePlus imp = IJ.openImage(imagePath);
 			imp.show();
+			// get number of frames of image
+			int nFrames = imp.getNFrames();
 			IJ.run(imp, "Subtract Background...", "stack rolling="+subtractionRadius);
 			IJ.run(imp, "Enhance Contrast", "saturated=0.35");
 			IJ.run(imp, "Cyan", "");
@@ -197,6 +212,16 @@ public class SpermMotility implements Command {
 					return;
 				}
 			}
+
+			// Save the image with the tracking result as avi with overlay
+			String outputPath = Paths.get(resultsPath, imageNameWithoutExtension + ".avi").toString();
+			IJ.log("Saving image with tracking result to: " + outputPath);
+			imp.setAntialiasRendering(false);
+			// make overlay on imp thicker
+			//imp.getOverlay().setStrokeWidth(20.0);
+			IJ.run(imp, "AVI... ", "compression=None frame=1 save=[" + outputPath + "]");
+			//IJ.saveAs(imp, "Tiff", "C:/Users/mathi/Downloads/mri-stack.tif");
+
 
 			// Close the image
 			IJ.run("Close All");
