@@ -54,6 +54,9 @@ public class Tracking {
      * @param tracker_gap_closing_max_distance Max gap distance to close a track across frames
      * @param tracker_max_frame_gap Max frame gap allowed for tracking
      * @param track_duration_min Duration filter (min duration of a track)
+     * @param min_mean_speed Minimum mean speed of a track in um/s
+     * @param min_straight_speed Minimum straight line speed of a track in um/s
+     * @param min_linearity Minimum linearity of a track
      * @return
      */
     public TrackingConfig setConfig(
@@ -65,7 +68,9 @@ public class Tracking {
             double tracker_gap_closing_max_distance,
             int tracker_max_frame_gap,
             double track_duration_min,
-            double min_mean_speed
+            double min_mean_speed,
+            double min_straight_speed,
+            double min_linearity
     ) {
         this.trackingConfig = new TrackingConfig(
                 subtraction_radius,
@@ -76,7 +81,9 @@ public class Tracking {
                 tracker_gap_closing_max_distance,
                 tracker_max_frame_gap,
                 track_duration_min,
-                min_mean_speed
+                min_mean_speed,
+                min_straight_speed,
+                min_linearity
         );
         return this.trackingConfig;
     }
@@ -231,7 +238,7 @@ public class Tracking {
         File cleanedCsvFile = new File(csvFileTracks.getParent(), csvFileTracks.getName());
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(cleanedCsvFile))) {
             // Write the header
-            writer.write("LABEL,TRACK_ID,NUMBER_SPOTS,NUMBER_GAPS,TRACK_DURATION,TRACK_DISPLACEMENT,TRACK_MEAN_SPEED,TOTAL_DISTANCE_TRAVELED,MEAN_STRAIGHT_LINE_SPEED,LINEARITY_OF_FORWARD_PROGRESSION,MOTILE (mean_speed > "+this.trackingConfig.min_mean_speed+"),PERCENT_MOTILITY (mean_speed > "+this.trackingConfig.min_mean_speed+")\n");
+            writer.write("LABEL,TRACK_ID,NUMBER_SPOTS,NUMBER_GAPS,TRACK_DURATION,TRACK_DISPLACEMENT,TRACK_MEAN_SPEED,TOTAL_DISTANCE_TRAVELED,MEAN_STRAIGHT_LINE_SPEED,LINEARITY_OF_FORWARD_PROGRESSION,MOTILE (mean_speed > "+this.trackingConfig.min_mean_speed+"),PERCENT_MOTILITY (mean_speed > "+this.trackingConfig.min_mean_speed+"), MEAN_STRAIGHT_LINE_SPEED > "+this.trackingConfig.min_straight_speed+", LINEARITY_OF_FORWARD_PROGRESSION > "+this.trackingConfig.min_linearity+"\n");
             // Calculate percent motility
             long totalTracks = records.size() - 3; // Exclude the header row
             long motileTracks = records.stream()
@@ -262,7 +269,22 @@ public class Tracking {
                 if (utils.isNumeric(record.get("TRACK_MEAN_SPEED"))) {
                     percentMotility = String.valueOf((double) motileTracks / totalTracks * 100);
                 }
-                    writer.write(label + "," + trackId + "," + numberSpots + "," + numberGaps + "," + trackDuration + "," + trackDisplacement + "," + trackMeanSpeed + "," + totalDistanceTraveled + "," + meanStraightLineSpeed + "," + linearityOfForwardProgression + "," + motile + "," + percentMotility + "\n");
+
+                String straight = "";
+                if (utils.isNumeric(record.get("MEAN_STRAIGHT_LINE_SPEED")) && Double.parseDouble(record.get("MEAN_STRAIGHT_LINE_SPEED")) > this.trackingConfig.min_straight_speed) {
+                    straight = "1";
+                } else if (utils.isNumeric(record.get("MEAN_STRAIGHT_LINE_SPEED")) && Double.parseDouble(record.get("MEAN_STRAIGHT_LINE_SPEED")) <= this.trackingConfig.min_straight_speed) {
+                    straight = "0";
+                }
+
+                String linear = "";
+                if (utils.isNumeric(record.get("LINEARITY_OF_FORWARD_PROGRESSION")) && Double.parseDouble(record.get("LINEARITY_OF_FORWARD_PROGRESSION")) > this.trackingConfig.min_linearity) {
+                    linear = "1";
+                } else if (utils.isNumeric(record.get("LINEARITY_OF_FORWARD_PROGRESSION")) && Double.parseDouble(record.get("LINEARITY_OF_FORWARD_PROGRESSION")) <= this.trackingConfig.min_linearity) {
+                    linear = "0";
+                }
+
+                    writer.write(label + "," + trackId + "," + numberSpots + "," + numberGaps + "," + trackDuration + "," + trackDisplacement + "," + trackMeanSpeed + "," + totalDistanceTraveled + "," + meanStraightLineSpeed + "," + linearityOfForwardProgression + "," + motile + "," + percentMotility + ", " + straight + ", " + linear + "\n");
             }
         }
     }

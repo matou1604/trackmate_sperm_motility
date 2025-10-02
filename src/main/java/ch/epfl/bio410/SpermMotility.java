@@ -1,5 +1,9 @@
 package ch.epfl.bio410;
 
+import fiji.plugin.trackmate.SelectionModel;
+import fiji.plugin.trackmate.gui.displaysettings.DisplaySettings;
+import fiji.plugin.trackmate.gui.displaysettings.DisplaySettingsIO;
+import fiji.plugin.trackmate.visualization.hyperstack.HyperStackDisplayer;
 import ij.IJ;
 import ij.ImagePlus;
 import ij.WindowManager;
@@ -9,6 +13,8 @@ import net.imagej.ImageJ;
 import org.scijava.command.Command;
 import org.scijava.plugin.Plugin;
 
+import java.awt.*;
+import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.FilenameFilter;
 import java.io.IOException;
@@ -22,6 +28,7 @@ import ch.epfl.bio410.utils.utils;
 import ch.epfl.bio410.utils.TrackingConfig;
 import ch.epfl.bio410.tracking.Tracking;
 
+import javax.imageio.ImageIO;
 
 
 @Plugin(type = Command.class, menuPath = "Plugins>FRT>Sperm motility")
@@ -41,6 +48,8 @@ public class SpermMotility implements Command {
 	private final double durationFilter = 0.3; // Tracking parameters, duration filter (min duration of a track)
 	// Config
 	private final double minMeanSpeed = 5; // Minimum mean speed of a track in um/s
+	private final double minStraightSpeed = 5; // Minimum straight line speed of a track in um/s
+	private final double minLinearity = 0.1; // Minimum linearity of a track
 
 	public void run() {
 
@@ -74,6 +83,8 @@ public class SpermMotility implements Command {
 		dlg.addNumericField("Max frame gap", maxFrameGap, 0);
 		dlg.addNumericField("Track duration filter (min)", durationFilter, 2);
 		dlg.addNumericField("Minimum mean speed (um/s)", minMeanSpeed, 2);
+		dlg.addNumericField("Minimum straight line speed (um/s)", minStraightSpeed, 2);
+		dlg.addNumericField("Minimum linearity", minLinearity, 2);
 
 //		dlg.setInsets(20,0,0);
 //		dlg.addImage(IJ.openImage("C:\\Users\\mathi\\OneDrive\\Documents\\EPFL\\PDM Harvard\\Trackmate\\trackmate_sperm_motility\\src\\images\\color.png"));
@@ -116,6 +127,8 @@ public class SpermMotility implements Command {
 		int frameGap = (int) dlg.getNextNumber();
 		double trackDurationMin = dlg.getNextNumber();
 		double minMeanSpeed = dlg.getNextNumber();
+		double minStraightSpeed = dlg.getNextNumber();
+		double minLinearity = dlg.getNextNumber();
 		boolean stopBetweenImages = dlg.getNextBoolean();
 		boolean skipAnalysedImages = dlg.getNextBoolean();
 
@@ -130,7 +143,9 @@ public class SpermMotility implements Command {
 				gapClosingMaxDistance,
 				frameGap,
 				trackDurationMin,
-				minMeanSpeed
+				minMeanSpeed,
+				minStraightSpeed,
+				minLinearity
 		);
 
 		// TRACKING
@@ -197,8 +212,43 @@ public class SpermMotility implements Command {
 				throw new RuntimeException(e);
 			}
 
+//			// Save the image with the tracking result as avi with overlay
+  			String outputPath = Paths.get(resultsPath, imageNameWithoutExtension + ".png").toString();
+			IJ.log("Saving image with tracking result to: " + outputPath);
+
+//			imp.setAntialiasRendering(false);
+//			// make overlay on imp thicker
+//			//imp.getOverlay().setStrokeWidth(20.0);
+//			IJ.run(imp, "AVI... ", "compression=None frame=1 save=[" + outputPath + "]");
+//			//IJ.saveAs(imp, "Tiff", "C:/Users/mathi/Downloads/mri-stack.tif");
+
+			try {
+				// Get the current Fiji window
+				ImagePlus imp_tracked = WindowManager.getCurrentImage();
+				if (imp_tracked == null) {
+					System.out.println("No active Fiji window found.");
+					return;
+				}
+
+				// Get the bounds of the Fiji window
+				Rectangle windowBounds = imp_tracked.getWindow().getBounds();
+
+				// Capture the screen area of the Fiji window
+				Robot robot = new Robot();
+				BufferedImage screenshot = robot.createScreenCapture(windowBounds);
+
+				// Save the screenshot to the specified path
+				File outputFile = new File(outputPath);
+				ImageIO.write(screenshot, "png", outputFile);
+
+				System.out.println("Screenshot saved to: " + outputPath);
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+
+
 			// Look at tiles
-			if (stopBetweenImages){
+			if (stopBetweenImages) {
 				new WaitForUserDialog("Tracking check.\n", "Check tracking results.").show();
 
 				GenericDialog dialog = new GenericDialog("Tracking done");
@@ -212,16 +262,6 @@ public class SpermMotility implements Command {
 					return;
 				}
 			}
-
-			// Save the image with the tracking result as avi with overlay
-			String outputPath = Paths.get(resultsPath, imageNameWithoutExtension + ".avi").toString();
-			IJ.log("Saving image with tracking result to: " + outputPath);
-			imp.setAntialiasRendering(false);
-			// make overlay on imp thicker
-			//imp.getOverlay().setStrokeWidth(20.0);
-			IJ.run(imp, "AVI... ", "compression=None frame=1 save=[" + outputPath + "]");
-			//IJ.saveAs(imp, "Tiff", "C:/Users/mathi/Downloads/mri-stack.tif");
-
 
 			// Close the image
 			IJ.run("Close All");

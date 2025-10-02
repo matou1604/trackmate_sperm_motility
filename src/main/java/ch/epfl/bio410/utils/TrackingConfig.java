@@ -20,6 +20,8 @@ public class TrackingConfig {
     public int tracker_max_frame_gap;
     public double track_duration_min;
     public double min_mean_speed;
+    public double min_straight_speed;
+    public double min_linearity;
     public int subtraction_radius;
 
     public String configPath = null;
@@ -47,6 +49,8 @@ public class TrackingConfig {
         this.tracker_max_frame_gap = 5;
         this.track_duration_min = 0.3d;
         this.min_mean_speed = 5.0d;
+        this.min_straight_speed = 5.0d;
+        this.min_linearity = 0.1d;
     }
     /**
      * Constructor for TrackingConfig.
@@ -59,6 +63,8 @@ public class TrackingConfig {
      * @param tracker_max_frame_gap Max frame gap allowed for tracking.
      * @param track_duration_min Duration filter (min duration of a track).
      * @param min_mean_speed Minimum mean speed of a track in um/s.
+     * @param min_straight_speed Minimum straight line speed of a track in um/s.
+     * @param min_linearity Minimum linearity of a track.
      */
     public TrackingConfig(
             int subtraction_radius,
@@ -69,7 +75,9 @@ public class TrackingConfig {
             double tracker_gap_closing_max_distance,
             int tracker_max_frame_gap,
             double track_duration_min,
-            double min_mean_speed
+            double min_mean_speed,
+            double min_straight_speed,
+            double min_linearity
     ) {
         this.subtraction_radius = subtraction_radius;
         this.detector_radius = detector_radius;
@@ -80,6 +88,8 @@ public class TrackingConfig {
         this.tracker_max_frame_gap = tracker_max_frame_gap;
         this.track_duration_min = track_duration_min;
         this.min_mean_speed = min_mean_speed;
+        this.min_straight_speed = min_straight_speed;
+        this.min_linearity = min_linearity;
     }
     /**
      * Create a TrackingConfig object from a properties file.
@@ -88,7 +98,7 @@ public class TrackingConfig {
      */
     public static TrackingConfig createFromPropertiesFile(String filename) {
         String config_path = accessConfigPathFromResources(filename);
-        TrackingConfig config = new TrackingConfig(0, 0, 0, false, 0, 0, 0, 0, 0);
+        TrackingConfig config = new TrackingConfig(0, 0, 0, false, 0, 0, 0, 0, 0,0,0);
         if (config_path != null) {
             config.loadFromPropertiesFile(config_path);
         }
@@ -102,7 +112,7 @@ public class TrackingConfig {
      * @return TrackingConfig object with the loaded parameters.
      */
     public static TrackingConfig createFromPropertiesFile(File filename) {
-        TrackingConfig config = new TrackingConfig(0, 0, 0, false, 0, 0, 0, 0,0);
+        TrackingConfig config = new TrackingConfig(0, 0, 0, false, 0, 0, 0, 0, 0, 0, 0);
         if (filename != null) {
             config.loadFromPropertiesFile(filename.getAbsolutePath());
         }
@@ -160,6 +170,8 @@ public class TrackingConfig {
             IJ.log("- Tracker max frame gap for closing : " + this.tracker_max_frame_gap);
             IJ.log("- Track minimum duration filter : " + this.track_duration_min + " seconds");
             IJ.log("- Track minimum mean speed : " + this.min_mean_speed + " µm/s");
+            IJ.log("- Track minimum straight line speed : " + this.min_straight_speed + " µm/s");
+            IJ.log("- Track minimum linearity : " + this.min_linearity);
         }
         IJ.log("----- End of config");
     }
