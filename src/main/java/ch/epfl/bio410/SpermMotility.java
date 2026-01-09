@@ -92,9 +92,13 @@ public class SpermMotility implements Command {
 
 		dlg.setInsets(20,10,0);
 		dlg.addCheckbox("Stop between images", false);
-		dlg.setInsets(0,10,0);
 
+		dlg.setInsets(0,10,0);
 		dlg.addCheckbox("Skip already analysed images", false);
+
+		dlg.setInsets(0,10,0);
+		dlg.addCheckbox("Save image with tracking overlay", false);
+
 		dlg.showDialog();
 
 		if (dlg.wasCanceled()) return;
@@ -131,6 +135,7 @@ public class SpermMotility implements Command {
 		double minLinearity = dlg.getNextNumber();
 		boolean stopBetweenImages = dlg.getNextBoolean();
 		boolean skipAnalysedImages = dlg.getNextBoolean();
+		boolean saveImageWithOverlay = dlg.getNextBoolean();
 
 
 		// Set the config if needed (use existing if set or no config available)
@@ -213,39 +218,39 @@ public class SpermMotility implements Command {
 			}
 
 //			// Save the image with the tracking result as avi with overlay
-  			String outputPath = Paths.get(resultsPath, imageNameWithoutExtension + ".png").toString();
-			IJ.log("Saving image with tracking result to: " + outputPath);
+			if (saveImageWithOverlay) {
+				String outputPath = Paths.get(resultsPath, imageNameWithoutExtension + ".png").toString();
+				IJ.log("Saving image with tracking result to: " + outputPath);
 
-//			imp.setAntialiasRendering(false);
-//			// make overlay on imp thicker
-//			//imp.getOverlay().setStrokeWidth(20.0);
-//			IJ.run(imp, "AVI... ", "compression=None frame=1 save=[" + outputPath + "]");
-//			//IJ.saveAs(imp, "Tiff", "C:/Users/mathi/Downloads/mri-stack.tif");
+				//			imp.setAntialiasRendering(false);
+				//			// make overlay on imp thicker
+				//			//imp.getOverlay().setStrokeWidth(20.0);
+				//			IJ.run(imp, "AVI... ", "compression=None frame=1 save=[" + outputPath + "]");
+				//			//IJ.saveAs(imp, "Tiff", "C:/Users/mathi/Downloads/mri-stack.tif");
 
-			try {
-				// Get the current Fiji window
-				ImagePlus imp_tracked = WindowManager.getCurrentImage();
-				if (imp_tracked == null) {
-					System.out.println("No active Fiji window found.");
-					return;
+				try {
+					// Get the current Fiji window
+					ImagePlus imp_tracked = WindowManager.getCurrentImage();
+					if (imp_tracked == null) {
+						System.out.println("No active Fiji window found.");
+						return;
+					}
+					// Get the bounds of the Fiji window
+					Rectangle windowBounds = imp_tracked.getWindow().getBounds();
+
+					// Capture the screen area of the Fiji window
+					Robot robot = new Robot();
+					BufferedImage screenshot = robot.createScreenCapture(windowBounds);
+
+					// Save the screenshot to the specified path
+					File outputFile = new File(outputPath);
+					ImageIO.write(screenshot, "png", outputFile);
+
+					System.out.println("Screenshot saved to: " + outputPath);
+				} catch (Exception e) {
+					e.printStackTrace();
 				}
-
-				// Get the bounds of the Fiji window
-				Rectangle windowBounds = imp_tracked.getWindow().getBounds();
-
-				// Capture the screen area of the Fiji window
-				Robot robot = new Robot();
-				BufferedImage screenshot = robot.createScreenCapture(windowBounds);
-
-				// Save the screenshot to the specified path
-				File outputFile = new File(outputPath);
-				ImageIO.write(screenshot, "png", outputFile);
-
-				System.out.println("Screenshot saved to: " + outputPath);
-			} catch (Exception e) {
-				e.printStackTrace();
 			}
-
 
 			// Look at tiles
 			if (stopBetweenImages) {

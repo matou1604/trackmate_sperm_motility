@@ -214,7 +214,7 @@ public class Tracking {
         TrackTableView trackTableView = new TrackTableView(model, sm, ds, imagePath);
 
         // Export the tables to CSV files
-        //trackTableView.getSpotTable().exportToCsv(csvFileSpots); //TODO: uncomment if you want to save spots
+        trackTableView.getSpotTable().exportToCsv(csvFileSpots); //TODO: uncomment if you want to save spots
         trackTableView.getTrackTable().exportToCsv(csvFileTracks);
 
         // Save all spots table (includes all spots, even those not in tracks)
