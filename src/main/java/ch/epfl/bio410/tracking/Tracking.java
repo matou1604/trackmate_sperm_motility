@@ -47,6 +47,7 @@ public class Tracking {
     /**
      * Set the configuration parameters for tracking.
      * @param subtraction_radius Radius for background subtraction in pixels
+     * @param saturation Saturation level for Enhanced Contrast in % (0-100)
      * @param detector_radius Radius of the object in um
      * @param detector_threshold Quality threshold
      * @param detector_median_filter Median filter
@@ -57,10 +58,14 @@ public class Tracking {
      * @param min_mean_speed Minimum mean speed of a track in um/s
      * @param min_straight_speed Minimum straight line speed of a track in um/s
      * @param min_linearity Minimum linearity of a track
+     * @param stop_between_images Stop between images for user input
+     * @param skip_analysed_images Skip images that have already been analysed
+     * @param save_image_with_overlay Save the image with overlay of tracks and spots
      * @return
      */
     public TrackingConfig setConfig(
             int subtraction_radius,
+            double saturation,
             double detector_radius,
             double detector_threshold,
             boolean detector_median_filter,
@@ -70,10 +75,14 @@ public class Tracking {
             double track_duration_min,
             double min_mean_speed,
             double min_straight_speed,
-            double min_linearity
+            double min_linearity,
+            boolean stop_between_images,
+            boolean skip_analysed_images,
+            boolean save_image_with_overlay
     ) {
         this.trackingConfig = new TrackingConfig(
                 subtraction_radius,
+                saturation,
                 detector_radius,
                 detector_threshold,
                 detector_median_filter,
@@ -83,7 +92,10 @@ public class Tracking {
                 track_duration_min,
                 min_mean_speed,
                 min_straight_speed,
-                min_linearity
+                min_linearity,
+                stop_between_images,
+                skip_analysed_images,
+                save_image_with_overlay
         );
         return this.trackingConfig;
     }

@@ -59,6 +59,7 @@ A results folder will be created in the same directory as the input folder, and 
 
 - You can then modify the parameters of the tracking part of the analysis: 
     - **Background subtraction radius**: the radius of the background subtraction circle, in pixels.
+    - **Contrast enhancement**: saturation accepted for contrast enhancement, meaning, the percentage of pixels that are clipped at the very dark and very bright ends of the histogram. Only visual/for display purposes, does not change the pixel values.
     - **Detection radius**: the radius of the detection circle, in µm.
     - **Quality detection threshold**: the minimum quality of the detection. This value is subjective to each experiment, and should be adjusted for each dataset.
     - **Apply median filter**: if checked, a median filter will be applied to the image before detection. 
@@ -72,6 +73,8 @@ A results folder will be created in the same directory as the input folder, and 
 
 During the analysis, the plugin will display the image being analysed. 
 If you want to see the results of the analysis, you can check the ***Stop between images*** box.
+
+### ADD save screenshot and reanalyze already analyzed images
 
 <br>
 

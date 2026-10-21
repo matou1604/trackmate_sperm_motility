@@ -37,6 +37,8 @@ public class SpermMotility implements Command {
 	private final String path = Paths.get(System.getProperty("user.home")).toString();
 	private TrackingConfig config;
 	private String[] fileList = new String[]{};
+	private final int default_subtractionRadius = 50; 	// Preprocessing parameters, radius for background subtraction in pixels
+	private final double default_saturation = 0.35; 	// Preprocessing parameters, saturation for contrast enhancement (percentage)
 	// Detection parameters
 	private final double radius = 3.5; 	// Detection parameters, radius of the object in um
 	private final double threshold = 0.357;  // Detection parameters, quality threshold
@@ -66,7 +68,8 @@ public class SpermMotility implements Command {
 
 		dlg.setInsets(20,0,0);
 		dlg.addMessage("Preprocessing:");
-		dlg.addNumericField("Background subtraction (pxl)", 50, 0);
+		dlg.addNumericField("Background subtraction (pxl)", default_subtractionRadius, 0);
+		dlg.addNumericField("Contrast enhancement (%)", default_saturation, 2);
 
 		dlg.setInsets(15,0,0);
 		dlg.addMessage("Spot detection:");
@@ -87,7 +90,6 @@ public class SpermMotility implements Command {
 		dlg.addNumericField("Minimum linearity", minLinearity, 2);
 
 //		dlg.setInsets(20,0,0);
-//		dlg.addImage(IJ.openImage("C:\\Users\\mathi\\OneDrive\\Documents\\EPFL\\PDM Harvard\\Trackmate\\trackmate_sperm_motility\\src\\images\\color.png"));
 //		IJ.run("Size...", "width=500 height=500 constrain");
 
 		dlg.setInsets(20,10,0);
@@ -123,6 +125,7 @@ public class SpermMotility implements Command {
 
 		// Get all the tracking parameters
 		int subtractionRadius = (int) dlg.getNextNumber();
+		double saturation = dlg.getNextNumber();
 		double detectionRadius = dlg.getNextNumber();
 		double detectionThreshold = dlg.getNextNumber();
 		boolean applyMedianFilter = dlg.getNextBoolean();
@@ -141,6 +144,7 @@ public class SpermMotility implements Command {
 		// Set the config if needed (use existing if set or no config available)
 		this.config = new TrackingConfig(
 				subtractionRadius,
+				saturation,
 				detectionRadius,
 				detectionThreshold,
 				applyMedianFilter,
@@ -150,7 +154,10 @@ public class SpermMotility implements Command {
 				trackDurationMin,
 				minMeanSpeed,
 				minStraightSpeed,
-				minLinearity
+				minLinearity,
+				stopBetweenImages,
+				skipAnalysedImages,
+				saveImageWithOverlay
 		);
 
 		// TRACKING
@@ -194,9 +201,20 @@ public class SpermMotility implements Command {
 			imp.show();
 			// get number of frames of image
 			int nFrames = imp.getNFrames();
+
+			// Preprocessing
+			// Background substraction
 			IJ.run(imp, "Subtract Background...", "stack rolling="+subtractionRadius);
-			IJ.run(imp, "Enhance Contrast", "saturated=0.35");
+			// Contrast enhancement (only visual, does not change the pixel values, only for display purposes)
+			if (saturation >= 0.0 && saturation <= 100.0) {
+				IJ.run(imp, "Enhance Contrast", "saturated="+saturation);
+			} else {
+				IJ.log("Saturation value is out of range (0-100). Skipping contrast enhancement.");
+			}
+			// Color the image cyan for better visibility
 			IJ.run(imp, "Cyan", "");
+
+
 
 			// Run tracking on the image
 			Model model = tracker.runTracking(imp);
@@ -217,7 +235,7 @@ public class SpermMotility implements Command {
 				throw new RuntimeException(e);
 			}
 
-//			// Save the image with the tracking result as avi with overlay
+//			// Save the image with the tracking result as avi with overlay   FIXME
 			if (saveImageWithOverlay) {
 				String outputPath = Paths.get(resultsPath, imageNameWithoutExtension + ".png").toString();
 				IJ.log("Saving image with tracking result to: " + outputPath);
@@ -227,6 +245,7 @@ public class SpermMotility implements Command {
 				//			//imp.getOverlay().setStrokeWidth(20.0);
 				//			IJ.run(imp, "AVI... ", "compression=None frame=1 save=[" + outputPath + "]");
 				//			//IJ.saveAs(imp, "Tiff", "C:/Users/mathi/Downloads/mri-stack.tif");
+				// saveAs("PNG", "C:/Users/ma1209984/OneDrive - FHNW/Dokumente/06_Harvard/data-C/results/C13-C-TP1-Motility-02.png");
 
 				try {
 					// Get the current Fiji window

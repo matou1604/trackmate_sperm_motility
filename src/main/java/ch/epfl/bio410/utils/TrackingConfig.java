@@ -12,6 +12,8 @@ import java.util.Properties;
 
 public class TrackingConfig {
 
+    public int subtraction_radius;
+    public double saturation;
     public double detector_radius;
     public double detector_threshold;
     public boolean detector_median_filter;
@@ -22,7 +24,9 @@ public class TrackingConfig {
     public double min_mean_speed;
     public double min_straight_speed;
     public double min_linearity;
-    public int subtraction_radius;
+    public boolean stop_between_images;
+    public boolean skip_analysed_images;
+    public boolean save_image_with_overlay;
 
     public String configPath = null;
     public String configName = null;
@@ -41,6 +45,7 @@ public class TrackingConfig {
      */
     public TrackingConfig() {
         this.subtraction_radius = 50;
+        this.saturation = 0.35;
         this.detector_radius = 3.5d;
         this.detector_threshold = 0.3d;
         this.detector_median_filter = true;
@@ -51,6 +56,9 @@ public class TrackingConfig {
         this.min_mean_speed = 5.0d;
         this.min_straight_speed = 5.0d;
         this.min_linearity = 0.1d;
+        this.stop_between_images = false;
+        this.skip_analysed_images = false;
+        this.save_image_with_overlay = false;
     }
     /**
      * Constructor for TrackingConfig.
@@ -68,6 +76,7 @@ public class TrackingConfig {
      */
     public TrackingConfig(
             int subtraction_radius,
+            double saturation,
             double detector_radius,
             double detector_threshold,
             boolean detector_median_filter,
@@ -77,9 +86,13 @@ public class TrackingConfig {
             double track_duration_min,
             double min_mean_speed,
             double min_straight_speed,
-            double min_linearity
+            double min_linearity,
+            boolean stop_between_images,
+            boolean skip_analysed_images,
+            boolean save_image_with_overlay
     ) {
         this.subtraction_radius = subtraction_radius;
+        this.saturation = saturation;
         this.detector_radius = detector_radius;
         this.detector_threshold = detector_threshold;
         this.detector_median_filter = detector_median_filter;
@@ -90,6 +103,9 @@ public class TrackingConfig {
         this.min_mean_speed = min_mean_speed;
         this.min_straight_speed = min_straight_speed;
         this.min_linearity = min_linearity;
+        this.stop_between_images = stop_between_images;
+        this.skip_analysed_images = skip_analysed_images;
+        this.save_image_with_overlay = save_image_with_overlay;
     }
     /**
      * Create a TrackingConfig object from a properties file.
@@ -98,7 +114,7 @@ public class TrackingConfig {
      */
     public static TrackingConfig createFromPropertiesFile(String filename) {
         String config_path = accessConfigPathFromResources(filename);
-        TrackingConfig config = new TrackingConfig(0, 0, 0, false, 0, 0, 0, 0, 0,0,0);
+        TrackingConfig config = new TrackingConfig(0, 0, 0, 0, false, 0, 0, 0, 0, 0,0,0, false, false, false);
         if (config_path != null) {
             config.loadFromPropertiesFile(config_path);
         }
@@ -112,7 +128,7 @@ public class TrackingConfig {
      * @return TrackingConfig object with the loaded parameters.
      */
     public static TrackingConfig createFromPropertiesFile(File filename) {
-        TrackingConfig config = new TrackingConfig(0, 0, 0, false, 0, 0, 0, 0, 0, 0, 0);
+        TrackingConfig config = new TrackingConfig(0, 0, 0, 0, false, 0, 0, 0, 0, 0, 0, 0, false, false, false);
         if (filename != null) {
             config.loadFromPropertiesFile(filename.getAbsolutePath());
         }
@@ -162,6 +178,7 @@ public class TrackingConfig {
         }
         if (showTrackingParams) {
             IJ.log("- Background subtraction radius : " + this.subtraction_radius + " pxl");
+            IJ.log("- Saturation : " + this.saturation + " %");
             IJ.log("- Detector radius : " + this.detector_radius + " µm");
             IJ.log("- Detector quality threshold : " + this.detector_threshold);
             IJ.log("- Detector using median filter : " + this.detector_median_filter);
@@ -172,6 +189,9 @@ public class TrackingConfig {
             IJ.log("- Track minimum mean speed : " + this.min_mean_speed + " µm/s");
             IJ.log("- Track minimum straight line speed : " + this.min_straight_speed + " µm/s");
             IJ.log("- Track minimum linearity : " + this.min_linearity);
+            IJ.log("- Stop between images : " + this.stop_between_images);
+            IJ.log("- Skip already analysed images : " + this.skip_analysed_images);
+            IJ.log("- Save image with tracking overlay : " + this.save_image_with_overlay);
         }
         IJ.log("----- End of config");
     }
