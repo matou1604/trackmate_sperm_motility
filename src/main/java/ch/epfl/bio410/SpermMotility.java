@@ -30,6 +30,7 @@ import ch.epfl.bio410.tracking.Tracking;
 
 import javax.imageio.ImageIO;
 import ij.plugin.ScreenGrabber;
+import fiji.plugin.trackmate.action.CaptureOverlayAction;
 
 
 @Plugin(type = Command.class, menuPath = "Plugins>FRT>Sperm motility")
@@ -241,17 +242,30 @@ public class SpermMotility implements Command {
 				String outputPath = Paths.get(resultsPath, imageNameWithoutExtension + ".png").toString();
 				IJ.log("Saving image with tracking result to: " + outputPath);
 
-				if (imp.getWindow() == null) {
-					IJ.error("Could not capture image", "The image window is not available.");
+				int frame = imp.getFrame();
+				ImagePlus capturedImage = CaptureOverlayAction.capture(
+						imp, frame, frame, model.getLogger());
+
+				if (capturedImage != null) {
+					IJ.saveAs(capturedImage, "PNG", outputPath);
+					capturedImage.close();
 				} else {
-					ImagePlus screenshot = new ScreenGrabber().captureImage();
-					if (screenshot != null) {
-						IJ.saveAs(screenshot, "PNG", outputPath);
-						screenshot.close();
-					} else {
-						IJ.error("Could not capture image", "Screen capture did not return an image.");
-					}
+					IJ.error("Could not capture image",
+							"TrackMate overlay capture did not return an image.");
 				}
+
+				// old, dirtier version, where if a window overlays the image it shows in the screenshot
+//				if (imp.getWindow() == null) {
+//					IJ.error("Could not capture image", "The image window is not available.");
+//				} else {
+//					ImagePlus screenshot = new ScreenGrabber().captureImage();
+//					if (screenshot != null) {
+//						IJ.saveAs(screenshot, "PNG", outputPath);
+//						screenshot.close();
+//					} else {
+//						IJ.error("Could not capture image", "Screen capture did not return an image.");
+//					}
+//				}
 
 			}
 
