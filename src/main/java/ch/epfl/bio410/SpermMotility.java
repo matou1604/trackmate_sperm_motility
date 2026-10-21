@@ -29,6 +29,7 @@ import ch.epfl.bio410.utils.TrackingConfig;
 import ch.epfl.bio410.tracking.Tracking;
 
 import javax.imageio.ImageIO;
+import ij.plugin.ScreenGrabber;
 
 
 @Plugin(type = Command.class, menuPath = "Plugins>FRT>Sperm motility")
@@ -235,41 +236,25 @@ public class SpermMotility implements Command {
 				throw new RuntimeException(e);
 			}
 
-//			// Save the image with the tracking result as avi with overlay   FIXME
+			// Save the image with the tracking result
 			if (saveImageWithOverlay) {
 				String outputPath = Paths.get(resultsPath, imageNameWithoutExtension + ".png").toString();
 				IJ.log("Saving image with tracking result to: " + outputPath);
 
-				//			imp.setAntialiasRendering(false);
-				//			// make overlay on imp thicker
-				//			//imp.getOverlay().setStrokeWidth(20.0);
-				//			IJ.run(imp, "AVI... ", "compression=None frame=1 save=[" + outputPath + "]");
-				//			//IJ.saveAs(imp, "Tiff", "C:/Users/mathi/Downloads/mri-stack.tif");
-				// saveAs("PNG", "C:/Users/ma1209984/OneDrive - FHNW/Dokumente/06_Harvard/data-C/results/C13-C-TP1-Motility-02.png");
-
-				try {
-					// Get the current Fiji window
-					ImagePlus imp_tracked = WindowManager.getCurrentImage();
-					if (imp_tracked == null) {
-						System.out.println("No active Fiji window found.");
-						return;
+				if (imp.getWindow() == null) {
+					IJ.error("Could not capture image", "The image window is not available.");
+				} else {
+					ImagePlus screenshot = new ScreenGrabber().captureImage();
+					if (screenshot != null) {
+						IJ.saveAs(screenshot, "PNG", outputPath);
+						screenshot.close();
+					} else {
+						IJ.error("Could not capture image", "Screen capture did not return an image.");
 					}
-					// Get the bounds of the Fiji window
-					Rectangle windowBounds = imp_tracked.getWindow().getBounds();
-
-					// Capture the screen area of the Fiji window
-					Robot robot = new Robot();
-					BufferedImage screenshot = robot.createScreenCapture(windowBounds);
-
-					// Save the screenshot to the specified path
-					File outputFile = new File(outputPath);
-					ImageIO.write(screenshot, "png", outputFile);
-
-					System.out.println("Screenshot saved to: " + outputPath);
-				} catch (Exception e) {
-					e.printStackTrace();
 				}
+
 			}
+
 
 			// Look at tiles
 			if (stopBetweenImages) {
@@ -292,7 +277,6 @@ public class SpermMotility implements Command {
 			IJ.log("Finished processing image: " + fileName + "\n\n");
 		}
 	}
-
 
 
 	/**

@@ -178,8 +178,7 @@ public class Tracking {
         IJ.log(String.valueOf(model.getSpots().getNSpots(false)));
         if (model.getSpots().getNSpots(false) == 0) {
             IJ.log("Spot collection empty. No spots detected.");
-            if (true) { // TODO: add this.stopbetweenImages to config
-                // TODO: et tester avec images sans spots
+            if (true) { // TODO: et tester avec images sans spots
                 new WaitForUserDialog("Spot collection empty.", "No spots detected. \nPress OK to continue to the next image.").show();
             }
             return null; // Exit or handle the case as needed
@@ -226,7 +225,7 @@ public class Tracking {
         TrackTableView trackTableView = new TrackTableView(model, sm, ds, imagePath);
 
         // Export the tables to CSV files
-        trackTableView.getSpotTable().exportToCsv(csvFileSpots); //TODO: uncomment if you want to save spots
+        trackTableView.getSpotTable().exportToCsv(csvFileSpots);
         trackTableView.getTrackTable().exportToCsv(csvFileTracks);
 
         // Save all spots table (includes all spots, even those not in tracks)
