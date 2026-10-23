@@ -59,7 +59,7 @@ public class Tracking {
      * @param min_straight_speed Minimum straight line speed of a track in um/s
      * @param min_linearity Minimum linearity of a track
      * @param stop_between_images Stop between images for user input
-     * @param skip_analysed_images Skip images that have already been analysed
+     * @param skip_analysed_images Skip images that have already been analyzed
      * @param save_image_with_overlay Save the image with overlay of tracks and spots
      * @return
      */
@@ -210,7 +210,6 @@ public class Tracking {
      * Save the features of the tracks to CSV files.
      * @param model TrackMate model object
      * @param csvFileTracks File to save the tracks features
-     * @throws IOException
      */
     public void saveFeaturesToCSV(Model model, File csvFileSpots, File csvFileTracks, String imagePath) throws IOException { // removed File csvFileSpots,
         // Create a selection model for the TrackMate model

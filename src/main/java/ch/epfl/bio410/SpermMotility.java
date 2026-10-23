@@ -28,8 +28,6 @@ import ch.epfl.bio410.utils.utils;
 import ch.epfl.bio410.utils.TrackingConfig;
 import ch.epfl.bio410.tracking.Tracking;
 
-import javax.imageio.ImageIO;
-import ij.plugin.ScreenGrabber;
 import fiji.plugin.trackmate.action.CaptureOverlayAction;
 
 
@@ -90,9 +88,6 @@ public class SpermMotility implements Command {
 		dlg.addNumericField("Minimum mean speed (um/s)", minMeanSpeed, 2);
 		dlg.addNumericField("Minimum straight line speed (um/s)", minStraightSpeed, 2);
 		dlg.addNumericField("Minimum linearity", minLinearity, 2);
-
-//		dlg.setInsets(20,0,0);
-//		IJ.run("Size...", "width=500 height=500 constrain");
 
 		dlg.setInsets(20,10,0);
 		dlg.addCheckbox("Stop between images", false);
@@ -181,10 +176,9 @@ public class SpermMotility implements Command {
 			}
 		}
 
-		IJ.run("Overlay Options...", "stroke=none width=20 fill=none set"); //FIXME
+		IJ.run("Overlay Options...", "stroke=none width=20 fill=none set");
 
-
-		// start for loop processing and tracking each image in loop one at a time
+		// Start for loop processing and tracking each image in loop one at a time
 		for (String fileName : fileList) {
 			String imagePath = Paths.get(inputDir, fileName).toString();
 			String imageNameWithoutExtension = fileName.substring(0, fileName.lastIndexOf('.'));
@@ -201,8 +195,7 @@ public class SpermMotility implements Command {
 			// Open the image
 			ImagePlus imp = IJ.openImage(imagePath);
 			imp.show();
-			// get number of frames of image
-			int nFrames = imp.getNFrames();
+			int nFrames = imp.getNFrames(); // Get number of frames of image
 
 			// Preprocessing
 			// Background substraction
@@ -243,29 +236,18 @@ public class SpermMotility implements Command {
 				IJ.log("Saving image with tracking result to: " + outputPath);
 
 				int frame = imp.getFrame();
-				ImagePlus capturedImage = CaptureOverlayAction.capture(
-						imp, frame, frame, model.getLogger());
+				ImagePlus capturedImage = CaptureOverlayAction.capture(imp, frame, frame, model.getLogger());
 
-				if (capturedImage != null) {
-					IJ.saveAs(capturedImage, "PNG", outputPath);
-					capturedImage.close();
-				} else {
-					IJ.error("Could not capture image",
-							"TrackMate overlay capture did not return an image.");
-				}
+				IJ.saveAs(capturedImage, "PNG", outputPath);
+				capturedImage.close();
 
 				// old, dirtier version, where if a window overlays the image it shows in the screenshot
-//				if (imp.getWindow() == null) {
-//					IJ.error("Could not capture image", "The image window is not available.");
-//				} else {
-//					ImagePlus screenshot = new ScreenGrabber().captureImage();
+//				if (imp.getWindow() == null) {IJ.error("Could not capture image", "The image window is not available.");
+//				} else {ImagePlus screenshot = new ScreenGrabber().captureImage();
 //					if (screenshot != null) {
 //						IJ.saveAs(screenshot, "PNG", outputPath);
-//						screenshot.close();
-//					} else {
-//						IJ.error("Could not capture image", "Screen capture did not return an image.");
-//					}
-//				}
+//						screenshot.close();}
+//					else {IJ.error("Could not capture image", "Screen capture did not return an image.");}}
 
 			}
 
@@ -299,8 +281,7 @@ public class SpermMotility implements Command {
 	 * your integrated development environment (IDE).
 	 *
 	 * @param args whatever, it's ignored
-	 * @throws Exception
-	 */
+     */
 	public static void main(final String... args) throws Exception {
 		final ImageJ ij = new ImageJ();
 		ij.ui().showUI();
